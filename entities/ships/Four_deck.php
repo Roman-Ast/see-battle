@@ -2,17 +2,20 @@
 
 namespace seeBattle\entities\ships;
 
+use seeBattle\src\Game;
+
 class Four_deck
 {
   private $count_of_deck;
   private $width;
   private $height;
 
-  public function __construct()
+  public function __construct(array $coordinats = [])
   {
+      $game = new Game();
       $this->count_of_deck = 4;
-      $this->width = 10;
-      $this->height = 10;
+      $this->width = 50;
+      $this->height = 50;
   }
 
   public function getCountOfDeck()

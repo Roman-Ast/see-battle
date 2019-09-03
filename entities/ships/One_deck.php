@@ -2,6 +2,8 @@
 
 namespace seeBattle\entities\ships;
 
+use seeBattle\entities\Field;
+
 class One_deck
 {
   private $count_of_deck;
@@ -11,8 +13,8 @@ class One_deck
   public function __construct()
   {
       $this->count_of_deck = 1;
-      $this->width = 10;
-      $this->height = 10;
+      $this->width = 50;
+      $this->height = 50;
   }
 
   public function getCountOfDeck()

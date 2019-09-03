@@ -4,16 +4,16 @@ $(document).ready(function() {
 
   $.ajax({
     type: 'GET',
-    data: JSON.stringify(),
+    data: JSON.stringify(canvas.width),
     contentType: 'application/json',
     url: '/field'
   }).done(function(data) {
     ctx.fillStyle = 'brown';
-    ctx.fillRect(
-      data.coordinates.x,
-      data.coordinates.y,
-      data.width,
-      data.height
-    );
+
+    for (let key in data) {
+      for (let i = 0; i < data[key].length; i += 1) {
+        ctx.fillRect(data[key][i], Number(key), 50, 50);
+      }
+    }
   });
 });

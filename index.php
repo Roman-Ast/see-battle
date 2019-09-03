@@ -4,6 +4,7 @@ use DI\Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
+use seeBattle\entities\Field;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -18,20 +19,31 @@ $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, true);
 
 $app->get('/', function ($request, $response) {
-    return $this->get('renderer')->render($response, 'index.phtml', ['res' => 'hello']);
+    return $this->get('renderer')->render($response, 'index.phtml');
 });
 $app->get('/field', function ($request, $response) {
-  $data = [
-    'coordinates' => ['x' => 0, 'y' => 0],
-    'width' => 50,
-    'height' => 50
-  ];
-  $payload = json_encode($data);
-  
-  $response->getBody()->write($payload);
-  return $response
+    $game = new Field();
+    $field = $game->createBattleField();
+    $fieldEncoded = json_encode($field);
+
+    $response->getBody()->write($fieldEncoded);
+    return $response
             ->withHeader('Content-Type', 'application/json');
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
