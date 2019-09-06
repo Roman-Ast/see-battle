@@ -7,13 +7,23 @@ $(document).ready(function() {
     data: JSON.stringify(canvas.width),
     contentType: 'application/json',
     url: '/field'
-  }).done(function(data) {
+  }).done(function(total) {
     ctx.fillStyle = 'brown';
+    const canvasWidth = canvas.width;
+    const width = canvasWidth / 10;
+    const height = canvasWidth / 10;
 
-    for (let key in data) {
-      for (let i = 0; i < data[key].length; i += 1) {
-        ctx.fillRect(data[key][i], Number(key), 50, 50);
+    const field = total['battleField'];
+    for (const ship in field) {
+      for (let i = 0; i < field[ship].length; i++) {
+        ctx.fillRect(
+          field[ship][i]['x'] * width,
+          field[ship][i]['y'] * width,
+          width,
+          height
+        );
       }
     }
+    console.log(total);
   });
 });

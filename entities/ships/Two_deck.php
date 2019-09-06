@@ -9,10 +9,11 @@ class Two_deck
   private $count_of_deck;
   private $width;
   private $height;
+  private $coordinates = [];
 
-  public function __construct()
+  public function __construct(array $coordinates = [])
   {
-      $game = new Game();
+      $this->coordinates = $coordinates;
       $this->count_of_deck = 2;
       $this->width = 50;
       $this->height = 50;
@@ -30,13 +31,9 @@ class Two_deck
   {
       return $this->height;
   }
-  public function createTwoDeckShip()
+  public function fourDeckShipCoordinates($coor)
   {
-      return [
-          'decks' => $this->getCountOfDeck(),
-          'width' => $this->getWidth(),
-          'height' => $this->getHeight()
-      ];
+      return $this->coordinates;
   }
 }
 

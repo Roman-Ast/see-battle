@@ -8,23 +8,22 @@ require __DIR__ . '/../vendor/autoload.php';
 
 class Field
 {
-    const WIDTH = 500;
-    const HEIGHT = 500;
     private $field = [];
-    private $shipWidth;
+    private $width;
+    private $height;
 
-    public function __construct()
+    public function __construct(int $width, int $height)
     {
-        $ship = new One_deck;
-        $this->shipWidth = $ship->getWidth();
+        $this->width = $width;
+        $this->height = $height;
     }
 
-    public function createBattleField()
+    public function createField()
     {
-        for ($k = 0; $k < self::HEIGHT; $k += $this->shipWidth) { 
-            $this->field[$k] = [];
-            for ($i = 0;$i < self::WIDTH;$i += $this->shipWidth) {
-                $this->field[$k][] = $i; 
+        for ($i = 0; $i < $this->height; $i++) { 
+            $this->field[$i] = [];
+            for ($k = 0; $k < $this->width; $k++) { 
+                $this->field[$i][$k] = $k; 
             }
         }
         return $this->field;
