@@ -10,7 +10,7 @@ use seeBattle\entities\ships\Two_deck;
 use seeBattle\entities\ships\One_deck;
 use seeBattle\entities\Field;
 
-class Game
+/*class Game
 {
     public $field;
     public $halo = [];
@@ -38,9 +38,7 @@ class Game
         if (isset($field[$y][$x])) {
             $firstPoint['y']= array_keys($field)[$y];
             $firstPoint['x']= $field[$y][$x];
-            /*foreach ($firstPoint as $point) {
-                unset($field[$point['y']][$point['x']]);
-            }*/
+        
             $coordinates[] = $firstPoint;
         } else {
             return $this->createShipCoords($countOfDecks);
@@ -149,4 +147,4 @@ class Game
     {
         return $this->halo;
     }
-}
+}*/

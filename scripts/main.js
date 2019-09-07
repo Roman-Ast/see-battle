@@ -39,6 +39,8 @@ $(document).ready(function() {
   $('.submit').on('click', function(e) {
     e.preventDefault();
 
+    const btn = this;
+
     const shipType = $('#typeOfShip')
       .find('option:selected')
       .attr('name');
@@ -53,9 +55,21 @@ $(document).ready(function() {
       return index % 2 === 0 ? acc.concat({ y: el, x: arr[index + 1] }) : acc;
     }, []);
 
-    console.log(readyShipCoords);
-    /*ships.forEach((value, key, map) => {
-      value.forEach(el => {
+    $.ajax({
+      type: 'POST',
+      data: JSON.stringify({
+        shipType,
+        readyShipCoords
+      }),
+      contentType: 'application/json',
+      url: '/createUserShips'
+    }).done(function(total) {
+      if (!total) {
+        alert('error');
+        return;
+      }
+      $(btn).attr('disabled', 'disabled');
+      total.forEach(el => {
         ctxUser.fillRect(
           el['x'] * shipWidth,
           el['y'] * shipHeight,
@@ -63,6 +77,6 @@ $(document).ready(function() {
           shipHeight
         );
       });
-    });*/
+    });
   });
 });

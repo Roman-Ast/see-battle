@@ -4,7 +4,8 @@ use DI\Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
-use seeBattle\src\Game;
+use seeBattle\entities\Field;
+use seeBattle\user_entities\User_Field;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -22,20 +23,27 @@ $app->get('/', function ($request, $response) {
     return $this->get('renderer')->render($response, 'index.phtml');
 });
 $app->get('/field', function($request, $response) {
-    $game = new Game();
-    $battleField = $game->createBattleField();
+    $field = new Field(10, 10);
+    $battleField = $field->createBattleField();
     
-    $halo = $game->getHalo();
-    $field = $game->getField();
-    $total = ['halo' => $halo, 'field' => $field, 'battleField' => $battleField];
+    $halo = $field->getHalo();
+    $fieldempty = $field->createField();
+    $total = ['halo' => $halo, 'fieldempty' => $fieldempty, 'battleField' => $battleField];
     $Encoded = json_encode($total);
     $response->getBody()->write($Encoded);
     return $response
             ->withHeader('Content-Type', 'application/json');
 });
 
-$app->post('/createUserShips', function($request, $response) {
+$app->post('/createUserShips', function($request, $response) use ($app){
+    $userField = new User_Field(10, 10);
+    $shipCoords = json_decode(file_get_contents('php://input'), true);
+    $validate = $userField->validateShipCoords($shipCoords);
     
+    $Encoded = json_encode($validate);
+    $response->getBody()->write($Encoded);
+    return $response
+            ->withHeader('Content-Type', 'application/json');
 });
 
 
