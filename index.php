@@ -21,11 +21,10 @@ $app->addErrorMiddleware(true, true, true);
 $app->get('/', function ($request, $response) {
     return $this->get('renderer')->render($response, 'index.phtml');
 });
-$app->get('/field', function ($request, $response) {
+$app->get('/field', function($request, $response) {
     $game = new Game();
     $battleField = $game->createBattleField();
     
-
     $halo = $game->getHalo();
     $field = $game->getField();
     $total = ['halo' => $halo, 'field' => $field, 'battleField' => $battleField];
@@ -33,6 +32,10 @@ $app->get('/field', function ($request, $response) {
     $response->getBody()->write($Encoded);
     return $response
             ->withHeader('Content-Type', 'application/json');
+});
+
+$app->post('/createUserShips', function($request, $response) {
+    
 });
 
 

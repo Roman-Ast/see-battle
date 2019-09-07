@@ -1,3 +1,46 @@
-#canvas {
+#container {
+  width: 90%;
+  margin: 5% auto;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+#canvasAI {
   border: 1px solid #333;
+}
+#canvasUser {
+  border: 1px solid #333;
+}
+#y {
+  width: 40px;
+}
+#x {
+  width: 40px;
+}
+#userControls {
+  border: 1px solid #333;
+  width: 250px;
+}
+#coordsfourDeck {
+}
+.coords {
+  display: none;
+  border: 1px solid #333;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.points {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+.labels {
+  width: 50%;
+}
+.buttons {
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
 }
