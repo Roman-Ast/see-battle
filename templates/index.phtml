@@ -6,14 +6,17 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Document</title>
     <link rel="stylesheet" href="../styles/main.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script text="javascript" src="../scripts/jquery_min.js"></script>
   </head>
   <body>
-    <div id="container">
+    <div id="wrapper">
       <canvas id="canvasAI" width="400" height="400"></canvas>
       <canvas id="canvasUser" width="400" height="400"></canvas>
       <div id="userControls">
-        <form action="/createUserShips" method="POST">
+        <div id="messages" class="alert"></div>
+        <div id="Userform">
+        <form action="/createUserShips" method="POST" >
           <select id="typeOfShip">
             <option selected>Выберите тип корабля</option>
             <option name="coordsfourDeck">Четырехпалубный</option>
@@ -53,10 +56,7 @@
               <input type="text" name="y" id="y">
               <input type="text" name="x" id="x">
             </div>
-            <div class="buttons">
-              <input type="submit" value="Разместить" class="submit">
-              <button class="deleteShip">Удалить</button>
-            </div>
+            <input type="submit" value="Разместить" class="submit">
           </div>
           <div id="coordsthreeDeck1" class="coords">
             <div class="points">
@@ -210,6 +210,10 @@
             </div>
             <input type="submit" value="Разместить" class="submit">
           </div>
+        </form>
+        </div>
+        <form>
+          <input type="submit" disabled="disabled" value="Отправить корабли" id="sendShips">
         </form>
       </div>
     </div>

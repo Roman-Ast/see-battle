@@ -9,7 +9,6 @@ class User_Field
     private $field = [];
     private $width;
     private $height;
-    public $halo = [];
 
     public function __construct(int $width, int $height)
     {
@@ -28,20 +27,8 @@ class User_Field
         }
         return $this->field;
     }
-    public function validateShipCoords($shipCoords)
+    public function getField()
     {
-        $coordsFromUser = $shipCoords['readyShipCoords'];
-        $coordinates = [];
-        $halo = [];
-        foreach ($coordsFromUser as $point) {
-            if (isset($this->field[$point['y']][$point['x']])) {
-                $coordinates[] = $point;
-            }
-        }
-        if (count($coordinates) === count($coordsFromUser)) {
-            return $coordinates;
-        }
-        return false;
-
+        return $this->field;
     }
 }

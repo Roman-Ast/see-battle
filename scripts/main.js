@@ -6,6 +6,7 @@ $(document).ready(function() {
   const canvasAIWidth = canvasAI.width;
   const shipWidth = canvasAIWidth / 10;
   const shipHeight = canvasAIWidth / 10;
+  const repoOfShips = new Map();
 
   $.ajax({
     type: 'GET',
@@ -39,7 +40,7 @@ $(document).ready(function() {
   $('.submit').on('click', function(e) {
     e.preventDefault();
 
-    const btn = this;
+    ctxUser.clearRect(0, 0, canvasUser.width, canvasUser.height);
 
     const shipType = $('#typeOfShip')
       .find('option:selected')
@@ -49,34 +50,93 @@ $(document).ready(function() {
       .children('input');
     const coordsArr = [];
     for (const input in children) {
-      if (children[input].value) coordsArr.push(children[input].value);
+      if (children[input].value) {
+        if (children[input].value.match(/^\d+$/)) {
+          coordsArr.push(children[input].value);
+          $('#messages').html('');
+          $('#messages').removeClass('alert-danger');
+          $(children[input]).css({ border: '1px solid #bbb' });
+        } else {
+          $('#messages').html(`<h4>Вы ввели недопустимые координаты</h4>`);
+          $('#messages').addClass('alert-danger');
+          $(children[input]).css({ border: '1px solid red' });
+        }
+      }
     }
     const readyShipCoords = coordsArr.reduce((acc, el, index, arr) => {
       return index % 2 === 0 ? acc.concat({ y: el, x: arr[index + 1] }) : acc;
     }, []);
 
-    $.ajax({
-      type: 'POST',
-      data: JSON.stringify({
-        shipType,
-        readyShipCoords
-      }),
-      contentType: 'application/json',
-      url: '/createUserShips'
-    }).done(function(total) {
-      if (!total) {
-        alert('error');
-        return;
-      }
-      $(btn).attr('disabled', 'disabled');
-      total.forEach(el => {
+    repoOfShips.set(shipType, readyShipCoords);
+
+    for (let points of repoOfShips.values()) {
+      for (const point of points) {
         ctxUser.fillRect(
-          el['x'] * shipWidth,
-          el['y'] * shipHeight,
+          point.x * shipWidth,
+          point.y * shipHeight,
           shipWidth,
           shipHeight
         );
-      });
+      }
+    }
+
+    if (repoOfShips.size >= 10) {
+      $('#sendShips').removeAttr('disabled');
+    }
+  });
+
+  $('#sendShips').on('click', function(e) {
+    e.preventDefault();
+
+    const arrForSend = [];
+
+    for (let points of repoOfShips.values()) {
+      arrForSend.push(points);
+    }
+
+    $.ajax({
+      type: 'POST',
+      data: JSON.stringify(arrForSend),
+      contentType: 'application/json',
+      url: '/createUserShips'
+    }).done(function(response) {
+      console.log(response);
+      const shipsWithErrors = [];
+      if (response.error) {
+        repoOfShips.forEach((value, key, map) => {
+          for (let i = 0; i < value.length; i++) {
+            if (
+              response.coords[0]['y'] === value[i]['y'] &&
+              response.coords[0]['x'] === value[i]['x']
+            ) {
+              shipsWithErrors.push(key);
+            }
+          }
+        });
+        let str = '';
+        for (let i = 0; i < shipsWithErrors.length; i++) {
+          str +=
+            '<li>' +
+            $('#typeOfShip')
+              .find(`option[name=${shipsWithErrors[i]}]`)
+              .val() +
+            '</li>';
+        }
+        $('#messages').html(
+          `<h5>Возможные проблемы</h5> 
+          <span>Hеверные координаты в кораблях:</span>
+          <ul>${str}<ul>`
+        );
+        $('#messages').addClass('alert-danger');
+        $('#messages').css({ overflow: 'scroll' });
+        console.log(shipsWithErrors);
+      }
+      if (response === 'Ok') {
+        $('#messages').html(`<h4>Все готово к началу игры!</h4>`);
+        $('#messages').removeClass('alert-danger');
+        $('#messages').addClass('alert-success');
+        $('#messages').css({ overflow: 'hidden' });
+      }
     });
   });
 });
