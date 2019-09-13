@@ -15,6 +15,7 @@ class Field
     private $width;
     private $height;
     public $halo = [];
+    private $battleField;
 
     public function __construct(int $width, int $height)
     {
@@ -137,7 +138,7 @@ class Field
         $oneDeck3 = new One_Deck();
         $oneDeck4 = new One_Deck();
 
-        return [
+        $this->battleField = [
             'fourDeck' => $this->createShipCoords($fourDeckShip->getCountOfDeck()),
             'threeDeck1' => $this->createShipCoords($threeDeck1->getCountOfDeck()),
             'threeDeck2' => $this->createShipCoords($threeDeck2->getCountOfDeck()),
@@ -149,6 +150,8 @@ class Field
             'oneDeck3' => $this->createShipCoords($oneDeck3->getCountOfDeck()),
             'oneDeck4' => $this->createShipCoords($oneDeck4->getCountOfDeck()),
         ];
+
+        return $this->battleField;
     }
     public function getField()
     {
@@ -157,5 +160,9 @@ class Field
     public function getHalo()
     {
         return $this->halo;
+    }
+    public function getBattlefield()
+    {
+        return $this->battleField;
     }
 }

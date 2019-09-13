@@ -16,7 +16,8 @@ $(document).ready(function() {
   }).done(function(total) {
     ctxAi.fillStyle = 'brown';
 
-    const field = total['battleField'];
+    const field = total['aiships'];
+    
     for (const ship in field) {
       for (let i = 0; i < field[ship].length; i++) {
         ctxAi.fillRect(
@@ -100,7 +101,7 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/createUserShips'
     }).done(function(response) {
-      console.log(response);
+      
       const shipsWithErrors = [];
       if (response.error) {
         repoOfShips.forEach((value, key, map) => {
@@ -138,5 +139,37 @@ $(document).ready(function() {
         $('#messages').css({ overflow: 'hidden' });
       }
     });
+  });
+
+  $('#shootbtn').on('click', function(e) {
+    e.preventDefault();
+
+    const y = $('#targetY').val();
+    const x = $('#targetX').val();
+
+    $.ajax({
+      type: 'POST',
+      data: JSON.stringify({
+        y,
+        x
+      }),
+      contentType: 'application/json',
+      url: '/usershooting'
+    }).done(function(newField) {
+      console.log(newField);
+      ctxAi.clearRect(0, 0, canvasUser.width, canvasUser.height);
+
+      for (const ship in newField) {
+        for (let i = 0; i < newField[ship].length; i++) {
+          ctxAi.fillRect(
+            newField[ship][i]['x'] * shipWidth,
+            newField[ship][i]['y'] * shipHeight,
+            shipWidth,
+            shipHeight
+          );
+        }
+      }
+    });
+
   });
 });

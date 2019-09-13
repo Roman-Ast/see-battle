@@ -10,6 +10,11 @@ use seeBattle\user_entities\Validator;
 
 require __DIR__ . '/vendor/autoload.php';
 
+$userconn = pg_connect("host=localhost dbname=userships user=roman password=rimma");
+$aiconn = pg_connect("host=localhost dbname=aiships user=roman password=rimma");
+//pg_query($aiconn, '');
+
+
 $container = new Container();
 $container->set('renderer', function () {
     return new \Slim\Views\PhpRenderer(__DIR__ . '/templates');
@@ -22,13 +27,35 @@ $app->addErrorMiddleware(true, true, true);
 $app->get('/', function ($request, $response) {
     return $this->get('renderer')->render($response, 'index.phtml');
 });
-$app->get('/field', function($request, $response) {
+$app->get('/field', function($request, $response) use($aiconn, $userconn){
     $field = new Field(10, 10);
     $battleField = $field->createBattleField();
     
-    $halo = $field->getHalo();
-    $fieldempty = $field->createField();
-    $total = ['halo' => $halo, 'fieldempty' => $fieldempty, 'battleField' => $battleField];
+    
+    foreach ($battleField as $shipname => $points) {
+        pg_query($aiconn, "
+            CREATE TABLE IF NOT EXISTS {$shipname}(
+                point integer,
+                y integer,
+                x integer
+            );
+        ");
+    }
+    foreach ($battleField as $shipname => $points) {
+        pg_query($aiconn, "TRUNCATE {$shipname}");
+        foreach ($points as $key => $point) {
+            pg_insert($aiconn, strtolower($shipname), $point);
+        }
+    }
+    $aiships = [];
+
+    foreach ($battleField as $shipname => $points) {
+        $lowershipname = strtolower($shipname);
+        $result = pg_query($aiconn, "SELECT * FROM {$lowershipname}");
+        $aiships[$shipname] = pg_fetch_all($result);
+    }
+
+    $total = ['aiships' => $aiships];
     $Encoded = json_encode($total);
     $response->getBody()->write($Encoded);
     return $response
@@ -51,7 +78,32 @@ $app->post('/createUserShips', function($request, $response) {
     return $response;
 });
 
+$app->post('/usershooting', function($request, $response) use($aiconn, $userconn){
+    $targetCoords = json_decode(file_get_contents('php://input'), true);
 
+    $y = $targetCoords['y'];
+    $x = $targetCoords['x'];
+
+    $result = pg_query($aiconn, "select pg_tables.tablename from pg_tables where schemaname='public';");
+    $shipsNames = pg_fetch_all($result);
+
+    foreach ($shipsNames as $shipName) {
+        pg_query($aiconn, "DELETE FROM {$shipName['tablename']} WHERE y = {$y} AND x = {$x};");
+    }
+
+    $aishipsUpdated = [];
+
+    foreach ($shipsNames as $shipName) {
+        $lowershipname = strtolower($shipName['tablename']);
+        $result = pg_query($aiconn, "SELECT * FROM {$lowershipname}");
+        $aishipsUpdated[$lowershipname] = pg_fetch_all($result);
+    }
+
+    $Encoded = json_encode($aishipsUpdated);
+    $response->getBody()->write($Encoded);
+    return $response
+            ->withHeader('Content-Type', 'application/json');
+});
 
 
 
