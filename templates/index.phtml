@@ -14,11 +14,6 @@
       <canvas id="canvasAI" width="400" height="400"></canvas>
       <canvas id="canvasUser" width="400" height="400"></canvas>
       <div id="userControls">
-        <form id="shoot" action="/usershooting" method="POST">
-          <input type="text" name="y" id="targetY">
-          <input type="text" name="x" id="targetX">
-          <input type="submit" value="shoot" id="shootbtn">
-        </form>
         <div id="messages" class="alert"></div>
         <div id="Userform">
         <form action="/createUserShips" method="POST" >
@@ -215,7 +210,19 @@
             </div>
             <input type="submit" value="Разместить" class="submit">
           </div>
+        </div>
         </form>
+        <div id="shoot">
+          <form id="shootForm" action="/usershooting" method="POST">
+            <input type="text" name="y" id="targetY">
+            <input type="text" name="x" id="targetX">
+            <input type="submit" value="shoot" id="shootbtn">
+          </form>
+        </div>
+        <div id="next">
+          <form id="nextForm" action="/aishooting" method="POST">
+            <input type="submit" value="ход компьютера" id="aishoot">
+          </form>
         </div>
         <form>
           <input type="submit" disabled="disabled" value="Отправить корабли" id="sendShips">

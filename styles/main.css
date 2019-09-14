@@ -1,16 +1,20 @@
 #wrapper {
-  width: 90%;
+  width: 95%;
   margin: 5% auto;
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
-  height: 70vh;
+  border: 1px solid red;
 }
 #canvasAI {
   border: 1px solid #333;
+  max-width: 500px;
+  max-height: 500px;
 }
 #canvasUser {
   border: 1px solid #333;
+  max-width: 500px;
+  max-height: 500px;
 }
 #y {
   width: 40px;
@@ -49,6 +53,7 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 #messages {
   width: 100%;
@@ -61,15 +66,31 @@
   font-size: 12px;
 }
 #sendShips {
-  display: flex;
-  align-self: flex-end;
+  position: absolute;
+  bottom: 0;
+  left: 30%;
 }
 #Userform {
   width: 100%;
   height: 60%;
 }
 #shoot{
+  width: 100%;
   display: flex;
   flex-wrap: nowrap;
-  justify-content: space-between;
+  justify-content: center;
+  display: none;
+}
+#shootForm{
+  display: flex;
+  justify-content: center;
+}
+#targetY{
+  max-width: 30%;
+}
+#targetX{
+  max-width: 30%;
+}
+#next{
+  display: none;
 }

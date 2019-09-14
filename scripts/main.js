@@ -7,7 +7,7 @@ $(document).ready(function() {
   const shipWidth = canvasAIWidth / 10;
   const shipHeight = canvasAIWidth / 10;
   const repoOfShips = new Map();
-
+  
   $.ajax({
     type: 'GET',
     data: JSON.stringify(canvasAI.width),
@@ -81,7 +81,7 @@ $(document).ready(function() {
       }
     }
 
-    if (repoOfShips.size >= 10) {
+    if (repoOfShips.size >= 2) {
       $('#sendShips').removeAttr('disabled');
     }
   });
@@ -89,11 +89,11 @@ $(document).ready(function() {
   $('#sendShips').on('click', function(e) {
     e.preventDefault();
 
-    const arrForSend = [];
+    const arrForSend = {};
 
-    for (let points of repoOfShips.values()) {
-      arrForSend.push(points);
-    }
+    repoOfShips.forEach( (value, key, map) => {
+      arrForSend[key] = value;
+    });
 
     $.ajax({
       type: 'POST',
@@ -101,10 +101,10 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/createUserShips'
     }).done(function(response) {
-      
+      console.log(response);
       const shipsWithErrors = [];
       if (response.error) {
-        repoOfShips.forEach((value, key, map) => {
+        repoOfShips.forEach((value, key) => {
           for (let i = 0; i < value.length; i++) {
             if (
               response.coords[0]['y'] === value[i]['y'] &&
@@ -137,6 +137,10 @@ $(document).ready(function() {
         $('#messages').removeClass('alert-danger');
         $('#messages').addClass('alert-success');
         $('#messages').css({ overflow: 'hidden' });
+
+        $('#sendShips').css({'display': 'none'});
+        $('#Userform').css({'display': 'none'});
+        $('#shoot').css({'display': 'flex'});
       }
     });
   });
@@ -155,8 +159,28 @@ $(document).ready(function() {
       }),
       contentType: 'application/json',
       url: '/usershooting'
-    }).done(function(newField) {
-      console.log(newField);
+    }).done(function(total) {
+      if (!total['deletedItem']) {
+        $('#messages').removeClass('alert-success');
+        $('#messages').addClass('alert-warning');
+        $('#messages').html(`<h4>Мимо!</h4>`);
+        $('#next').css({'display':'block'});
+      } else {
+        $('#messages').removeClass('alert-warning');
+        $('#messages').addClass('alert-success');
+        $('#messages').html(`<h4>Попадание!</h4>`);
+         console.log(total['deletedItem']);
+         const img = new Image();
+         img.src = "/../img/boom.png";
+          ctxAi.drawImage(
+            img,
+            total['deletedItem']['x'] * shipWidth,
+            total['deletedItem']['y']  * shipHeight
+          );
+          
+          
+      }
+      const newField = total['aishipsUpdated'];
       ctxAi.clearRect(0, 0, canvasUser.width, canvasUser.height);
 
       for (const ship in newField) {
@@ -170,6 +194,64 @@ $(document).ready(function() {
         }
       }
     });
+  });
 
+  $('#aishoot').on('click', function (e) {
+    e.preventDefault();
+
+    $('#messages').removeClass('alert-warning');
+    $('#messages').addClass('alert-primary');
+    $('#messages').html(`<h4>Ход компьютера...</h4>`);
+
+    $.ajax({
+      type: 'POST',
+      data: JSON.stringify(),
+      contentType: 'application/json',
+      url: '/aishooting'
+    }).done(function (response) {
+      console.log(response);
+      const points = response['resultArr'].filter(function (el) {
+        if (el) return el;
+      });
+
+      if (response['resOfShooting']) {
+        $('#messages').removeClass('alert-primary');
+        $('#messages').addClass('alert-danger');
+        $('#messages').html(
+          `<h4>
+          Компьютер нанес удар по координатам 
+          y: ${response['resOfShooting'][0][0]['y']}
+          x: ${response['resOfShooting'][0][0]['x']},
+          попадание!
+          </h4>`
+          );
+      } else {
+        $('#messages').removeClass('alert-primary');
+        $('#messages').removeClass('alert-danger');
+        $('#messages').removeClass('alert-warning');
+        $('#messages').addClass('alert-success');
+        $('#messages').html(
+          `<h4>
+          Компьютер нанес удар по координатам 
+          y: ${response['resOfShooting'][0][0]['y']}
+          x: ${response['resOfShooting'][0][0]['x']},
+          и ПРОМАЗАЛ!
+          </h4>`
+          );
+      }
+
+      ctxUser.clearRect(0, 0, canvasUser.width, canvasUser.height);
+      points.forEach(function (ship, i, arr) {
+        if(ship) {
+          ctxUser.fillRect(
+            ship[i]['x'] * shipWidth,
+            ship[i]['y'] * shipHeight,
+            shipWidth,
+            shipHeight
+          );
+        }
+        
+      });
+    });
   });
 });

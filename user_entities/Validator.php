@@ -21,7 +21,13 @@ class Validator
 
   public function validate($shipCoords)
   {
-        foreach ($shipCoords as $ship) {
+        $onlyPoints = [];
+        $values = array_values($shipCoords);
+
+        for ($i=0; $i < count($shipCoords); $i++) { 
+            $onlyPoints[$i] = $values[$i];
+        }
+        foreach ($onlyPoints as $ship) {
             if (isset($this->validateShipCoords($ship)['error'])) {
                 return $this->validateShipCoords($ship);
             }

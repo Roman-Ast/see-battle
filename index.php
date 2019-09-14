@@ -7,13 +7,12 @@ use Slim\Factory\AppFactory;
 use seeBattle\entities\Field;
 use seeBattle\user_entities\User_Field;
 use seeBattle\user_entities\Validator;
+use seeBattle\entities\Ai;
 
 require __DIR__ . '/vendor/autoload.php';
 
 $userconn = pg_connect("host=localhost dbname=userships user=roman password=rimma");
 $aiconn = pg_connect("host=localhost dbname=aiships user=roman password=rimma");
-//pg_query($aiconn, '');
-
 
 $container = new Container();
 $container->set('renderer', function () {
@@ -31,11 +30,10 @@ $app->get('/field', function($request, $response) use($aiconn, $userconn){
     $field = new Field(10, 10);
     $battleField = $field->createBattleField();
     
-    
+
     foreach ($battleField as $shipname => $points) {
         pg_query($aiconn, "
             CREATE TABLE IF NOT EXISTS {$shipname}(
-                point integer,
                 y integer,
                 x integer
             );
@@ -62,16 +60,38 @@ $app->get('/field', function($request, $response) use($aiconn, $userconn){
             ->withHeader('Content-Type', 'application/json');
 });
 
-$app->post('/createUserShips', function($request, $response) {
+$app->post('/createUserShips', function($request, $response) use($userconn){
     $shipCoords = json_decode(file_get_contents('php://input'), true);
 
     $validator = new Validator();
-    $validated = $validator->validate($shipCoords);
+    $validatedField = $validator->validate($shipCoords);
 
-    if (isset($validated['error'])) {
-        $response->getBody()->write(json_encode($validated));
+    if (isset($validatedField['error'])) {
+        $response->getBody()->write(json_encode($validatedField));
         return $response
             ->withHeader('Content-Type', 'application/json');
+    }
+
+    foreach ($shipCoords as $shipname => $points) {
+        pg_query($userconn, "
+            CREATE TABLE IF NOT EXISTS {$shipname}(
+                y integer,
+                x integer
+            );
+        ");
+    }
+    foreach ($shipCoords as $shipname => $points) {
+        pg_query($userconn, "TRUNCATE {$shipname}");
+        foreach ($points as $key => $point) {
+            pg_insert($userconn, strtolower($shipname), $point);
+        }
+    }
+
+    $userShips = [];
+    foreach ($shipCoords as $shipname => $points) {
+        $lowershipname = strtolower($shipname);
+        $result = pg_query($userconn, "SELECT * FROM {$lowershipname}");
+        $userShips[$shipname] = pg_fetch_all($result);
     }
 
     $response->getBody()->write("Ok");
@@ -80,15 +100,26 @@ $app->post('/createUserShips', function($request, $response) {
 
 $app->post('/usershooting', function($request, $response) use($aiconn, $userconn){
     $targetCoords = json_decode(file_get_contents('php://input'), true);
-
-    $y = $targetCoords['y'];
-    $x = $targetCoords['x'];
+    $miss = '';
 
     $result = pg_query($aiconn, "select pg_tables.tablename from pg_tables where schemaname='public';");
     $shipsNames = pg_fetch_all($result);
 
+    $deletedItem = '';
     foreach ($shipsNames as $shipName) {
-        pg_query($aiconn, "DELETE FROM {$shipName['tablename']} WHERE y = {$y} AND x = {$x};");
+        $result = pg_query(
+            $aiconn, "DELETE FROM {$shipName['tablename']} 
+            WHERE y = {$targetCoords['y']} 
+            AND x = {$targetCoords['x']} 
+            RETURNING *;"
+        );
+        $deletedItem = pg_fetch_all($result);
+        if ($deletedItem) {
+            break;
+        }
+    }
+    if (!$deletedItem) {
+        $miss = $targetCoords;
     }
 
     $aishipsUpdated = [];
@@ -99,49 +130,70 @@ $app->post('/usershooting', function($request, $response) use($aiconn, $userconn
         $aishipsUpdated[$lowershipname] = pg_fetch_all($result);
     }
 
-    $Encoded = json_encode($aishipsUpdated);
+    $total = [
+        'aishipsUpdated' => $aishipsUpdated,
+        'deletedItem' => $deletedItem,
+        'miss' => $miss,
+        'dir' => __DIR__
+    ];
+
+    $Encoded = json_encode($total);
     $response->getBody()->write($Encoded);
     return $response
             ->withHeader('Content-Type', 'application/json');
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*$app->get('/posts', function ($request, $response) use($posts){
-    $page = $request->getQueryParams()['page'] ?? 1;
-    $per = 5;
-    $postsChunked = array_chunk($posts, $per);
-    $params = [ 
-        'posts' => $postsChunked,
-        'page' => $page,
-        'lengthOfPostsRepo' => count($postsChunked)
-    ];
-    return $this->get('renderer')->render($response, 'posts/index.phtml', $params);
-});
-
-$app->get('/posts/{slug}', function ($request, $response, $args) use($posts){
-    $desiredPost = \collect($posts)->firstWhere('slug', $args['slug']);
-    if (empty($desiredPost)) {
-        $response->withStatus(404);
-        return $this->get('renderer')->render($response, 'posts/error.phtml');
+$app->post('/aishooting', function($request, $response) use($userconn) {
+    $Ai = new Ai();
+    $res = $Ai->shoot();
+    
+    
+    $result = pg_query(
+        $userconn, 
+        "SELECT table_name FROM information_schema.tables 
+        WHERE table_schema = 'public';"
+    );
+    $tables = pg_fetch_all($result);
+    $tablesNormalized = [];
+    foreach (array_values($tables) as $value) {
+        $tablesNormalized[] = $value['table_name'];
     }
-    $params = [
-        'desiredPost' => $desiredPost
-    ];
-    return $this->get('renderer')->render($response, 'posts/show.phtml', $params);
+    $resultOfAiShooting = [];
+    foreach ($tablesNormalized as $tableName) {
+        $responseFromDB = pg_query(
+            $userconn, 
+            "SELECT * FROM {$tableName} 
+            WHERE x = {$res['x']} AND y = {$res['y']};"
+        );
+        if (pg_fetch_all($responseFromDB)) {
+            $resultOfAiShooting[] = pg_fetch_all($responseFromDB);
+            pg_query(
+                $userconn, "DELETE FROM {$tableName} 
+                WHERE y = {$res['y']} 
+                AND x = {$res['x']};"
+            );
+            break;
+        };
+    }
+    
+    $resultingArray = [];
+    foreach ($tablesNormalized as $tableName) {
+        $temp = pg_query(
+            $userconn,
+            "SELECT * FROM {$tableName}"
+        );
+        $resultingArray[] = pg_fetch_all($temp);
+    }
+
+    $Encoded = json_encode(
+        [
+            'resultArr' => $resultingArray,
+            'resOfShooting' => $resultOfAiShooting ?? $res
+        ]
+    );
+    $response->getBody()->write($Encoded);
+    return $response
+        ->withHeader('Content-Type', 'application/json');
 });
-// END*/
 
 $app->run();
