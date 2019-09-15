@@ -101,6 +101,8 @@ $app->post('/createUserShips', function($request, $response) use($userconn){
 $app->post('/usershooting', function($request, $response) use($aiconn, $userconn){
     $targetCoords = json_decode(file_get_contents('php://input'), true);
     $miss = '';
+    $isShipAfloat = '';
+    $sunkedShip = '';
 
     $result = pg_query($aiconn, "select pg_tables.tablename from pg_tables where schemaname='public';");
     $shipsNames = pg_fetch_all($result);
@@ -118,8 +120,25 @@ $app->post('/usershooting', function($request, $response) use($aiconn, $userconn
             break;
         }
     }
+    
     if (!$deletedItem) {
         $miss = $targetCoords;
+    }
+
+    $tablesNormalized = [];
+    foreach ($shipsNames as $ship) {
+        foreach ($ship as $key => $value) {
+            $tablesNormalized[] = $value;
+        }
+    }
+    $resultOfAiShooting = [];
+    foreach ($tablesNormalized as $tableName) {
+        $temp = pg_query($aiconn,"SELECT * FROM {$tableName};");
+        $isShipAfloat = pg_fetch_all($temp);
+        if (!$isShipAfloat) {
+            $sunkedShip = $tableName;
+            break;
+        }
     }
 
     $aishipsUpdated = [];
@@ -134,7 +153,8 @@ $app->post('/usershooting', function($request, $response) use($aiconn, $userconn
         'aishipsUpdated' => $aishipsUpdated,
         'deletedItem' => $deletedItem,
         'miss' => $miss,
-        'dir' => __DIR__
+        'isShipAfloat' => $isShipAfloat,
+        'sunkedShip' => $sunkedShip
     ];
 
     $Encoded = json_encode($total);
@@ -145,19 +165,24 @@ $app->post('/usershooting', function($request, $response) use($aiconn, $userconn
 
 $app->post('/aishooting', function($request, $response) use($userconn) {
     $Ai = new Ai();
+    $emptytablename = '';
+    $isShipAfloat = '';
+    //Выбор координат для выстрела
     $res = $Ai->shoot();
     
-    
+    //выбираем все таблицы из базы с кораблями пользователя
     $result = pg_query(
         $userconn, 
         "SELECT table_name FROM information_schema.tables 
         WHERE table_schema = 'public';"
     );
+    //нормализация данных для обработки
     $tables = pg_fetch_all($result);
     $tablesNormalized = [];
     foreach (array_values($tables) as $value) {
         $tablesNormalized[] = $value['table_name'];
     }
+    //проверка результата выстрела (попадание или промах)
     $resultOfAiShooting = [];
     foreach ($tablesNormalized as $tableName) {
         $responseFromDB = pg_query(
@@ -166,6 +191,7 @@ $app->post('/aishooting', function($request, $response) use($userconn) {
             WHERE x = {$res['x']} AND y = {$res['y']};"
         );
         if (pg_fetch_all($responseFromDB)) {
+            $emptytablename = $tableName;
             $resultOfAiShooting[] = pg_fetch_all($responseFromDB);
             pg_query(
                 $userconn, "DELETE FROM {$tableName} 
@@ -175,7 +201,18 @@ $app->post('/aishooting', function($request, $response) use($userconn) {
             break;
         };
     }
-    
+    //отправка компьютеру ответа с результатом выстрела (попадание или промах)
+    if (!empty($resultOfAiShooting)) {
+        $res = pg_query(
+            $userconn,
+            "SELECT * FROM {$emptytablename};"
+        );
+        $isShipAfloat = pg_fetch_all($res);
+        $Ai->takeResponseFromUser($resultOfAiShooting, $isShipAfloat);
+    } else {
+        $Ai->takeResponseFromUser($resultOfAiShooting);
+    }
+    //оновление данных по кораблям пользователя с учетом попаданий
     $resultingArray = [];
     foreach ($tablesNormalized as $tableName) {
         $temp = pg_query(
@@ -188,7 +225,9 @@ $app->post('/aishooting', function($request, $response) use($userconn) {
     $Encoded = json_encode(
         [
             'resultArr' => $resultingArray,
-            'resOfShooting' => $resultOfAiShooting ?? $res
+            'resOfShooting' => empty($resultOfAiShooting) ? $res : $resultOfAiShooting,
+            'isShipAfloat' => $isShipAfloat,
+            'sunkedShip' => $emptytablename
         ]
     );
     $response->getBody()->write($Encoded);

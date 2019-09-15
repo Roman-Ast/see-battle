@@ -4,17 +4,20 @@
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
-  border: 1px solid red;
 }
 #canvasAI {
   border: 1px solid #333;
   max-width: 500px;
   max-height: 500px;
+  background-image: url("/img/Mar004.png");
+  background-size: cover;
 }
 #canvasUser {
   border: 1px solid #333;
   max-width: 500px;
   max-height: 500px;
+  background-image: url("/img/Mar004.png");
+  background-size: cover;
 }
 #y {
   width: 40px;
@@ -92,5 +95,5 @@
   max-width: 30%;
 }
 #next{
-  display: none;
+  display: none; 
 }
