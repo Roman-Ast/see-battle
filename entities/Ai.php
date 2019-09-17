@@ -44,54 +44,218 @@ class Ai
         );
     }
 
+    private function randomDirection()
+    {
+        return rand(0, 1) === 0 ? 'horizontal' : 'vertical';
+    }
+    private function randomSign(int $num)
+    {
+        return rand(0, 1) === 0 ? $num + 1 : $num - 1;
+    }
+    private function randomFirstOrLast(array $hits, $coordinate)
+    {
+        $max = \collect($hits)->max($coordinate);
+        $min = \collect($hits)->min($coordinate);
+        return rand(0, 1) === 0 ? $min - 1 : $max + 1;
+    }
+    private function checkInAiMemory(array $point, ...$arr)
+    {
+        $arrFiltered = array_filter($arr);
+        if (empty($arrFiltered)) return true;
+
+        foreach ($arrFiltered as $innerArray) {
+            foreach ($innerArray as $innerPoint) {
+                if ($point['x'] === $innerPoint['x'] && $point['y'] === $innerPoint['y']) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    private function strToInt(...$array)
+    {
+        $arrFiltered = array_filter($array);
+        if (empty($arrFiltered)) return false;
+        $result = [];
+        foreach ($array as $key => $innerArray) {
+            $result[$key] = [];
+            foreach ($innerArray as $key => $point) {
+                $result[$key] = ['y' => (int)$point['y'], 'x' => (int)$point['x']];
+            }
+            $result[$key] = [ 'y' => (integer) $point['y'], 'x' => (integer) $point['x'] ];
+        }
+        return $result;
+    }
     public function shoot()
     {
         $res = pg_query($this->connection, "SELECT * FROM hits;");
-        $hits = pg_fetch_all($res);
+        $hits = $this->strToInt(pg_fetch_all($res));
 
         $res = pg_query($this->connection, "SELECT * FROM misses;");
-        $misses = pg_fetch_all($res);
+        $misses = $this->strToInt(pg_fetch_all($res));
 
-        if ($hits) {
-            if (count($hits) > 1) {
+        $res = pg_query($this->connection, "SELECT * FROM ships;");
+        $ships = $this->strToInt(pg_fetch_all($res));
 
-            } else {
-                if (!$misses) {
-                    $Y = $hits[0]['y'] + 1;
-                    $X = $hits[0]['y'];
-                    return [ 'y' => $Y, 'x' => $X ];
-                } else {
-                    
-                }
-                
-            }
-        }
-
-
-
-
-
+        $res = pg_query($this->connection, "SELECT * FROM halo;");
+        $halo = $this->strToInt(pg_fetch_all($res));
 
         
 
-        $res = pg_query($this->connection, "SELECT * FROM ships;");
-        $ships = pg_fetch_all($res);
+        $X = '';
+        $Y = '';
 
-        $res = pg_query($this->connection, "SELECT * FROM halo;");
-        $halo = pg_fetch_all($res);
+        if ($hits) {
+            if (count($hits) > 1) {
+                $arrY = [];
+                $arrX = [];
+                foreach ($hits as $point) {
+                    foreach ($point as $key => $value) {
+                        if ($key === 'y') {
+                            $arrY[] = $value;
+                        }
+                    }
+                }
+                $firstY = $arrY[0];
+                $horizontal = \collect($arrY)->every(function($val) use($firstY){
+                    return $val === $firstY;
+                });
 
-        $randX = rand(0, 9);
-        $randY = rand(0, 9);
+                foreach ($hits as $point) {
+                    foreach ($point as $key => $value) {
+                        if ($key === 'x') {
+                            $arrX[] = $value;
+                        }
+                    }
+                }
+                $firstX = $arrX[0];
+                $vertical = \collect($arrX)->every(function($val) use($firstX){
+                    return $val === $firstX;
+                });
+                if ($horizontal) {
+                    if ($hits[0]['x'] === 0) {
+                        $X = $hits[count($hits) - 1]['x'] + 1;
+                        $Y = $hits[0]['y'];
+                        if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses)) {
+                            $this->lastshoot = ['y' => $Y, 'x' => $X];
+                            return $this->lastshoot;
+                        }
+                        return $this->shoot();
+                    }
+                    if ($hits[count($hits) - 1]['x'] === 9) {
+                        $X = $hits[0]['x'] - 1;
+                        $Y = $hits[0]['y'];
+                        if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                            $this->lastshoot = ['y' => $Y, 'x' => $X];
+                            return $this->lastshoot;
+                        }
+                        return $this->shoot();
+                    }
+                    $X = $this->randomFirstOrLast($hits, 'x');
+                    $Y = $hits[0]['y'];
+                    if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                        $this->lastshoot = ['y' => $Y, 'x' => $X];
+                        return $this->lastshoot;
+                    }
+                    return $this->shoot();
+                } else if ($vertical) {
+                    if ($hits[0]['y'] === 0) {
+                        $Y = $hits[count($hits) - 1]['y'] + 1;
+                        $X = $hits[0]['x'];
+                        if ($this->$this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                            $this->lastshoot = ['y' => $Y, 'x' => $X];
+                            return $this->lastshoot;
+                        }
+                        return $this->shoot();
+                    }
+                    if ($hits[count($hits) - 1]['x'] === 9) {
+                        $Y = $hits[0]['y'] - 1;
+                        $X = $hits[0]['x'];
+                        if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                            $this->lastshoot = ['y' => $Y, 'x' => $X];
+                            return $this->lastshoot;
+                        }
+                        return $this->shoot();
+                    }
+                    $Y = $this->randomFirstOrLast($hits, 'y');
+                    $X = $hits[0]['x'];
+                    if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                        $this->lastshoot = ['y' => $Y, 'x' => $X];
+                        return $this->lastshoot;
+                    }
+                    return $this->shoot();
+                }
+            } else {
+                $direction = $this->randomDirection();
+                if ($direction === 'horizontal') {
+                    if ($hits[0]['x'] === 0) {
+                        $X = 1;
+                        $Y = $hits[0]['y'];
+                        if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                            $this->lastshoot = ['y' => $Y, 'x' => $X];
+                            return $this->lastshoot;
+                        }
+                        return $this->shoot();
+                    }
+                    if ($hits[0]['x'] === 9) {
+                        $X = 8;
+                        $Y = $hits[0]['y'];
+                        if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                            $this->lastshoot = ['y' => $Y, 'x' => $X];
+                            return $this->lastshoot;
+                        }
+                        return $this->shoot();
+                    };
+                    $X = $this->randomSign($hits[0]['x']);
+                    $Y = $hits[0]['y'];
+                    if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                        $this->lastshoot = ['y' => $Y, 'x' => $X];
+                        return $this->lastshoot;
+                    }
+                    return $this->shoot();
+                } else if ($direction === 'vertical') {
+                    if ($hits[0]['y'] === 0) {
+                        $Y = 1;
+                        $X = $hits[0]['x'];
+                        if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                            $this->lastshoot = ['y' => $Y, 'x' => $X];
+                            return $this->lastshoot;
+                        }
+                        return $this->shoot();
+                    }
+                    if ($hits[0]['y'] === 9) {
+                        $Y = 8;
+                        $X = $hits[0]['x'];
+                        if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                            $this->lastshoot = ['y' => $Y, 'x' => $X];
+                            return $this->lastshoot;
+                        }
+                        return $this->shoot();
+                    }
+                    $Y = $this->randomSign($hits[0]['y']);
+                    $X = $hits[0]['x'];
+                    if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
+                        $this->lastshoot = ['y' => $Y, 'x' => $X];
+                        return $this->lastshoot;
+                    }
+                    return $this->shoot();
+                }
+            }
+        } else {
+            $this->lastshoot = ['y' => rand(0, 9), 'x' => rand(0, 9)];
 
-        $this->lastshoot = [ 'x' => 0, 'y' => 0 ];
-        return $this->lastshoot;
+            if ($this->checkInAiMemory($this->lastshoot, $halo, $ships, $misses, $hits)) {
+                return $this->lastshoot;
+            }
+            return $this->shoot;
+        }
     }
     public function takeResponseFromUser($resOfLastShoot, $isShipNotSunk = [])
     {
         if (empty($resOfLastShoot)) {
             pg_query(
                 $this->connection,
-                "INSERT INTO misses(y, x) 
+                "INSERT INTO misses
                 VALUES({$this->lastshoot['y']}, {$this->lastshoot['x']})"
             );
         } else {

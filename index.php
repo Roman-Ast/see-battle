@@ -13,6 +13,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 $userconn = pg_connect("host=localhost dbname=userships user=roman password=rimma");
 $aiconn = pg_connect("host=localhost dbname=aiships user=roman password=rimma");
+$aimemory = pg_connect("host=localhost dbname=aimemory user=roman password=rimma");
 
 $container = new Container();
 $container->set('renderer', function () {
@@ -26,7 +27,7 @@ $app->addErrorMiddleware(true, true, true);
 $app->get('/', function ($request, $response) {
     return $this->get('renderer')->render($response, 'index.phtml');
 });
-$app->get('/field', function($request, $response) use($aiconn, $userconn){
+$app->get('/field', function($request, $response) use($aiconn, $userconn, $aimemory){
     $field = new Field(10, 10);
     $battleField = $field->createBattleField();
     
@@ -52,6 +53,16 @@ $app->get('/field', function($request, $response) use($aiconn, $userconn){
         $result = pg_query($aiconn, "SELECT * FROM {$lowershipname}");
         $aiships[$shipname] = pg_fetch_all($result);
     }
+
+    foreach ($battleField as $shipname => $points) {
+        $lowershipname = strtolower($shipname);
+        pg_query($userconn, "TRUNCATE coords{$lowershipname}");
+    }
+
+    pg_query($aimemory, "TRUNCATE hits");
+    pg_query($aimemory, "TRUNCATE misses");
+    pg_query($aimemory, "TRUNCATE ships");
+    pg_query($aimemory, "TRUNCATE halo");
 
     $total = ['aiships' => $aiships];
     $Encoded = json_encode($total);
@@ -117,6 +128,11 @@ $app->post('/usershooting', function($request, $response) use($aiconn, $userconn
         );
         $deletedItem = pg_fetch_all($result);
         if ($deletedItem) {
+            $temp = pg_query($aiconn,"SELECT * FROM {$shipName['tablename']};");
+            $isShipAfloat = pg_fetch_all($temp);
+            if (!$isShipAfloat) {
+                $sunkedShip = $shipName['tablename'];
+            }
             break;
         }
     }
@@ -131,16 +147,6 @@ $app->post('/usershooting', function($request, $response) use($aiconn, $userconn
             $tablesNormalized[] = $value;
         }
     }
-    $resultOfAiShooting = [];
-    foreach ($tablesNormalized as $tableName) {
-        $temp = pg_query($aiconn,"SELECT * FROM {$tableName};");
-        $isShipAfloat = pg_fetch_all($temp);
-        if (!$isShipAfloat) {
-            $sunkedShip = $tableName;
-            break;
-        }
-    }
-
     $aishipsUpdated = [];
 
     foreach ($shipsNames as $shipName) {

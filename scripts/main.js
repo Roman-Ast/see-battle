@@ -7,7 +7,7 @@ $(document).ready(function() {
   const shipWidth = canvasAIWidth / 10;
   const shipHeight = canvasAIWidth / 10;
   const repoOfShips = new Map();
-  
+  $('#sendShips').removeAttr('disabled');
   $('#messages').addClass('alert-primary');
   $('#messages').html(
     `<h4>Добро пожаловать, боец!</h4>
@@ -77,7 +77,7 @@ $(document).ready(function() {
     }, []);
 
     repoOfShips.set(shipType, readyShipCoords);
-
+    
     for (let points of repoOfShips.values()) {
       for (const point of points) {
         ctxUser.fillRect(
@@ -88,9 +88,9 @@ $(document).ready(function() {
         );
       }
     }
-
+    
     if (repoOfShips.size >= 2) {
-      $('#sendShips').removeAttr('disabled');
+      
     }
   });
 
@@ -205,8 +205,8 @@ $(document).ready(function() {
          img.src = "/img/boom.png";
         if (!total['isShipAfloat']) {
           console.log(total);
-          const nameOfSunkedShip = 'coords' + $('#typeOfShip')
-              .find(`option[name=${total['sunkedShip']}]`)
+          const nameOfSunkedShip = $('#typeOfShip')
+              .find(`option[name=coords${total['sunkedShip']}]`)
               .val();
           $('#messages').html(
             `<h4>Попадание!</h4>
@@ -234,6 +234,8 @@ $(document).ready(function() {
 
   const aiShooting = (e, intForProgressBar) => {
     clearInterval(intForProgressBar);
+    $('#targetY').val('');
+    $('#targetX').val('');
     $('#messages').removeClass('alert-warning');
     $('#messages').addClass('alert-primary');
 
@@ -326,4 +328,61 @@ $(document).ready(function() {
     setTimeout(aiShooting, 2000, /*intForProgressBar*/);
   }
   $('#aishoot').on('click', timer);
+
+  $('#fillTheUserField').on('click', function (e) {
+    e.preventDefault();
+
+    repoOfShips.set('coordsonedeck1', [{'y': 0, 'x': 9}]);
+    repoOfShips.set('coordsonedeck2', [{'y': 0, 'x': 0}]);
+    repoOfShips.set('coordsonedeck3', [{'y': 5, 'x': 6}]);
+    repoOfShips.set('coordsonedeck4', [{'y': 4, 'x': 9}]);
+    repoOfShips.set('coordsfourdeck', [
+      {'y': 2, 'x': 0},
+      {'y': 3, 'x': 0},
+      {'y': 4, 'x': 0},
+      {'y': 5, 'x': 0}
+    ]);
+    repoOfShips.set('coordsthreedeck1', [
+      {'y': 2, 'x': 3},
+      {'y': 2, 'x': 4},
+      {'y': 2, 'x': 5}
+    ]);
+    repoOfShips.set('coordsthreedeck2', [
+      {'y': 8, 'x': 1},
+      {'y': 8, 'x': 2},
+      {'y': 8, 'x': 3}
+    ]);
+    repoOfShips.set('coordstwodeck1', [
+      {'y': 0, 'x': 4},
+      {'y': 0, 'x': 5}
+    ]);
+    repoOfShips.set('coordstwodeck2', [
+      {'y': 9, 'x': 7},
+      {'y': 9, 'x': 8}
+    ]);
+    repoOfShips.set('coordstwodeck3', [
+      {'y': 5, 'x': 3},
+      {'y': 6, 'x': 3}
+    ]);
+
+    for (let points of repoOfShips.values()) {
+      for (const point of points) {
+        ctxUser.fillRect(
+          point.x * shipWidth,
+          point.y * shipHeight,
+          shipWidth,
+          shipHeight
+        );
+      }
+    }
+
+    $.ajax({
+      type: 'POST',
+      data: JSON.stringify(repoOfShips.values()),
+      contentType: 'application/json',
+      url: '/createUserShips'
+    }).done(function (response) {
+      console.log(response);
+    });
+  });
 });
