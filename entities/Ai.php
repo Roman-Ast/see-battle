@@ -247,7 +247,7 @@ class Ai
             if ($this->checkInAiMemory($this->lastshoot, $halo, $ships, $misses, $hits)) {
                 return $this->lastshoot;
             }
-            return $this->shoot;
+            return $this->shoot();
         }
     }
     public function takeResponseFromUser($resOfLastShoot, $isShipNotSunk = [])
