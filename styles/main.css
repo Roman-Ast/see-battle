@@ -124,3 +124,19 @@
 .modal-body{
   text-align: center;
 }
+#canvasAiWrapper{
+  background-image: url(/img/coords.png);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 430px;
+  height: 430px;
+}
+#canvasUserWrapper{
+  background-image: url(/img/coords.png);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 430px;
+  height: 430px;
+}

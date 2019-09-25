@@ -63,22 +63,18 @@ $(document).ready(function() {
     const coordsArr = [];
     for (const input in children) {
       if (children[input].value) {
-        if (children[input].value.match(/^\d+$/)) {
-          coordsArr.push(children[input].value);
-          $('#messages').html('');
-          $('#messages').removeClass('alert-danger');
-          $(children[input]).css({ border: '1px solid #bbb' });
-        } else {
-          $('#messages').html(`<h4>Вы ввели недопустимые координаты</h4>`);
-          $('#messages').addClass('alert-danger');
-          $(children[input]).css({ border: '1px solid red' });
-        }
+        coordsArr.push(children[input].value);
       }
     }
+    
+    const letters = {
+      'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4,
+      'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9
+    };
     const readyShipCoords = coordsArr.reduce((acc, el, index, arr) => {
-      return index % 2 === 0 ? acc.concat({ y: el, x: arr[index + 1] }) : acc;
+      return index % 2 === 0 ? acc.concat({ x: letters[el] , y: arr[index + 1] - 1}) : acc;
     }, []);
-
+    
     repoOfShips.set(shipType, readyShipCoords);
     
     for (let points of repoOfShips.values()) {
@@ -161,30 +157,31 @@ $(document).ready(function() {
   $('#shootbtn').on('click', function(e) {
     e.preventDefault();
 
-    const y = $('#targetY').val();
-    const x = $('#targetX').val();
+    const letters = {
+      'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4,
+      'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9
+    };
+
+    const y = $('#targetY').val() - 1;
+    const x = letters[$('#targetX').val()];
+    console.log($('#targetX').val());
 
     $.ajax({
       type: 'POST',
-      data: JSON.stringify({
-        y,
-        x
-      }),
+      data: JSON.stringify({ y, x }),
       contentType: 'application/json',
       url: '/usershooting'
     }).done(function(total) {
       console.log(total);
       if (total.repeat) {
         $('#myModal').fadeIn(500);
-          $('body').css({'background': '#333'});
-          $('.modal-body').html('<h4>Вы уже стреляли в этот квадрат!</h4>');
-          $('.modal-header').html('<h3>Предупреждение!</h3>');
-          $('#finish').text('close');
-          $('#finish').on('click', function(e) {
-            e.preventDefault();
-            $('#myModal').css({'display': 'none'});
-            $('body').css({'background': 'none'});
-          });
+        $('.modal-body').html('<h4>Вы уже стреляли в этот квадрат!</h4>');
+        $('.modal-header').html('<h3>Предупреждение!</h3>');
+        $('#finish').text('close');
+        $('#finish').on('click', function(e) {
+          e.preventDefault();
+          $('#myModal').fadeOut(500);
+        });
         return;
       }
       if (!total['deletedItem']) {
@@ -294,7 +291,7 @@ $(document).ready(function() {
           if (response['isShipAfloat'] === false) {
             console.log(response.sunkedShip);
             const nameOfSunkedShip = $('#typeOfShip')
-              .find(`option[name=coords${response.sunkedShip}]`)
+              .find(`option[name=${response.sunkedShip}]`)
               .val();
 
             $('#messages').removeClass('alert-primary');
