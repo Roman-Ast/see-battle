@@ -4,147 +4,279 @@ namespace seeBattle\src;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use seeBattle\entities\ships\Four_deck;
-use seeBattle\entities\ships\Three_deck;
-use seeBattle\entities\ships\Two_deck;
-use seeBattle\entities\ships\One_deck;
+use seeBattle\user_entities\Validator;
 use seeBattle\entities\Field;
+use seeBattle\entities\Ai;
 
-/*class Game
+class Game
 {
-    public $field;
-    public $halo = [];
+    private $_aiconn;
+    private $_userconn;
+    private $_aimemory;
+    private $_aiships;
+    private $_userships;
+    private $_userShoots;
 
     public function __construct()
     {
-        $fieldEntity = new Field(10, 10);
-        $this->field = $fieldEntity->createField();
+        $this->_userconn = pg_connect(
+            "host=localhost dbname=userships user=roman password=rimma"
+        );
+        $this->_aiconn = pg_connect(
+            "host=localhost dbname=aiships user=roman password=rimma"
+        );
+        $this->_aimemory = pg_connect(
+            "host=localhost dbname=aimemory user=roman password=rimma"
+        );
+        $this->_userShoots = pg_connect(
+            "host=localhost dbname=usershoots user=roman password=rimma"
+        );
+        pg_query(
+            $this->_userShoots, 
+            "CREATE TABLE IF NOT EXISTS usershoots(
+                y integer,
+                x integer
+            );"
+        );
     }
 
-    public function Vector()
+    public function createAiField()
     {
-        return rand(1, 2) === 1 ? 'vertical' : 'horizontal';   
-    }
-    public function createShipCoords(int $countOfDecks)
-    {
-        $field = array_slice($this->field, 0);
-        $x = rand(0, 9);
-        $y = rand(0, 9);
-
-        $coordinates = [];
-        $halo = [];
-        $firstPoint = [];
-
-        if (isset($field[$y][$x])) {
-            $firstPoint['y']= array_keys($field)[$y];
-            $firstPoint['x']= $field[$y][$x];
+        $field = new Field(10, 10);
+        $battleField = $field->createBattleField();
         
-            $coordinates[] = $firstPoint;
-        } else {
-            return $this->createShipCoords($countOfDecks);
+        foreach ($battleField as $shipname => $points) {
+            pg_query(
+                $this->_aiconn, 
+                "CREATE TABLE IF NOT EXISTS {$shipname}(
+                    y integer,
+                    x integer
+                );"
+            );
+        }
+        foreach ($battleField as $shipname => $points) {
+            pg_query($this->_aiconn, "TRUNCATE {$shipname}");
+            foreach ($points as $key => $point) {
+                pg_insert($this->_aiconn, strtolower($shipname), $point);
+            }
+        }
+        $aiships = [];
+
+        foreach ($battleField as $shipname => $points) {
+            $lowershipname = strtolower($shipname);
+            $result = pg_query($this->_aiconn, "SELECT * FROM {$lowershipname}");
+            $aiships[$shipname] = pg_fetch_all($result);
+        }
+
+        foreach ($battleField as $shipname => $points) {
+            $lowershipname = strtolower($shipname);
+            pg_query($this->_userconn, "TRUNCATE {$lowershipname}");
+        }
+
+        pg_query($this->_aimemory, "TRUNCATE hits");
+        pg_query($this->_aimemory, "TRUNCATE misses");
+        pg_query($this->_aimemory, "TRUNCATE ships");
+        pg_query($this->_aimemory, "TRUNCATE halo");
+        pg_query($this->_userShoots, "TRUNCATE usershoots");
+
+        return ['aiships' => $aiships];
+    }
+
+    public function createUserField($shipCoords)
+    {
+        $validator = new Validator();
+        $validatedUserField = $validator->validate($shipCoords);
+
+        if (isset($validatedUserField['error'])) {
+            return $validatedUserField;
+        }
+
+        foreach ($shipCoords as $shipname => $points) {
+            pg_query(
+                $this->_userconn, 
+                "CREATE TABLE IF NOT EXISTS {$shipname}(
+                    y integer,
+                    x integer
+                );"
+            );
+        }
+        foreach ($shipCoords as $shipname => $points) {
+            pg_query($this->_userconn, "TRUNCATE {$shipname}");
+            foreach ($points as $key => $point) {
+                pg_insert($this->_userconn, strtolower($shipname), $point);
+            }
+        }
+
+        $userShips = [];
+        foreach ($shipCoords as $shipname => $points) {
+            $lowershipname = strtolower($shipname);
+            $result = pg_query($this->_userconn, "SELECT * FROM {$lowershipname}");
+            $userShips[$shipname] = pg_fetch_all($result);
+        }
+        return $userShips;
+    }
+
+    public function userShoot($targetCoords)
+    {
+        $miss = '';
+        $isShipAfloat = '';
+        $sunkedShip = '';
+
+        $record = pg_select($this->_userShoots, 'usershoots', $targetCoords);
+        if ($record) {
+            return false;
+        }
+        pg_insert($this->_userShoots, 'usershoots', $targetCoords);
+
+        $result = pg_query(
+            $this->_aiconn,
+            "select pg_tables.tablename from pg_tables where schemaname='public';"
+        );
+        $shipsNames = pg_fetch_all($result);
+
+        $deletedItem = '';
+        foreach ($shipsNames as $shipName) {
+            $result = pg_query(
+                $this->_aiconn, 
+                "DELETE FROM {$shipName['tablename']} 
+                WHERE y = {$targetCoords['y']} 
+                AND x = {$targetCoords['x']} 
+                RETURNING *;"
+            );
+            $deletedItem = pg_fetch_all($result);
+            if ($deletedItem) {
+                $temp = pg_query(
+                    $this->_aiconn,
+                    "SELECT * FROM {$shipName['tablename']};"
+                );
+                $isShipAfloat = pg_fetch_all($temp);
+                if (!$isShipAfloat) {
+                    $sunkedShip = $shipName['tablename'];
+                }
+                break;
+            }
         }
         
-        if ($this->Vector() === 'horizontal') {
-            $yAuto = $firstPoint['y'];
-            $xAuto = 0;
-            for ($i = 1; $i < $countOfDecks; $i++) { 
-                if (isset($field[$firstPoint['y']][$firstPoint['x'] + $i])) {
-                    $xAuto = $field[$firstPoint['y']][$firstPoint['x'] + $i];
-                } else {
-                    return $this->createShipCoords($countOfDecks);
-                }
-                $coordinates[] = [ 'y' => $yAuto, 'x' => $xAuto ];
-            }
-            for ($i = 0; $i < count($coordinates); $i++) { 
-                array_push($halo, [ 'y' => $coordinates[$i]['y'] - 1, 'x' => $coordinates[$i]['x'] ]);  
-            }
-            for ($i = 0; $i < count($coordinates); $i++) { 
-                array_push($halo, [ 'y' => $coordinates[$i]['y'] + 1, 'x' => $coordinates[$i]['x'] ]);  
-            }
-
-            $coordsFirstPoint = $coordinates[0];
-            array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'] - 1 ]);
-            array_push($halo, [ 'y' => $coordsFirstPoint['y'], 'x' => $coordsFirstPoint['x'] - 1, ]);
-            array_push($halo, [ 'y' => $coordsFirstPoint['y'] + 1, 'x' => $coordsFirstPoint['x'] - 1, ]);
-
-            $coordsLastPoint = $coordinates[count($coordinates) - 1];
-            array_push($halo, [ 'y' => $coordsLastPoint['y'] - 1, 'x' => $coordsLastPoint['x'] + 1, ]);
-            array_push($halo, [ 'y' => $coordsLastPoint['y'], 'x' => $coordsLastPoint['x'] + 1, ]);
-            array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] + 1, ]);
-            array_push($this->halo, $halo);
-        }
-        else {
-            for ($i = 1; $i < $countOfDecks; $i++) { 
-                $xAuto = $firstPoint['x'];
-                if (isset($field[$firstPoint['y'] + $i][$firstPoint['x']])) {
-                    $yAuto = $firstPoint['y'] + $i;
-                } else {
-                    return $this->createShipCoords($countOfDecks);
-                }
-                $coordinates[] = [ 'y' => $yAuto, 'x' => $xAuto ];
-            }
-            for ($i = 0; $i < count($coordinates); $i++) { 
-                array_push($halo, [ 'y' => $coordinates[$i]['y'], 'x' => $coordinates[$i]['x'] - 1 ]);  
-            }
-            for ($i = 0; $i < count($coordinates); $i++) { 
-                array_push($halo, [ 'y' => $coordinates[$i]['y'], 'x' => $coordinates[$i]['x'] + 1 ]);  
-            }
-
-            $coordsFirstPoint = $coordinates[0];
-            array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'] - 1 ]);
-            array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'], ]);
-            array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'] + 1, ]);
-
-            $coordsLastPoint = $coordinates[count($coordinates) - 1];
-            array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] - 1, ]);
-            array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'], ]);
-            array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] + 1, ]);
-            array_push($this->halo, $halo);
+        if (!$deletedItem) {
+            $miss = $targetCoords;
         }
 
-        foreach ($coordinates as $point) {
-            unset($field[$point['y']][$point['x']]);
+        $tablesNormalized = [];
+        foreach ($shipsNames as $ship) {
+            foreach ($ship as $key => $value) {
+                $tablesNormalized[] = $value;
+            }
+        }
+        $aishipsUpdated = [];
+
+        foreach ($shipsNames as $shipName) {
+            $lowershipname = strtolower($shipName['tablename']);
+            $result = pg_query(
+                $this->_aiconn,
+                "SELECT * FROM {$lowershipname}"
+            );
+            $aishipsUpdated[$lowershipname] = pg_fetch_all($result);
         }
 
-        foreach ($halo as $point) {
-            unset($field[$point['y']][$point['x']]);
-        }
-
-        $this->field = array_slice($field, 0);
-        return $coordinates;
-    }
-    public function createBattleField()
-    {
-        $fourDeckShip = new Four_deck();
-        $threeDeck1 = new Three_Deck();
-        $threeDeck2 = new Three_Deck();
-        $twoDeck1 = new Two_Deck();
-        $twoDeck2 = new Two_Deck();
-        $twoDeck3 = new Two_Deck();
-        $oneDeck1 = new One_Deck();
-        $oneDeck2 = new One_Deck();
-        $oneDeck3 = new One_Deck();
-        $oneDeck4 = new One_Deck();
+        $this->_aiships = $aishipsUpdated;
 
         return [
-            'fourDeck' => $this->createShipCoords($fourDeckShip->getCountOfDeck()),
-            'threeDeck1' => $this->createShipCoords($threeDeck1->getCountOfDeck()),
-            'threeDeck2' => $this->createShipCoords($threeDeck2->getCountOfDeck()),
-            'twoDeck1' => $this->createShipCoords($twoDeck1->getCountOfDeck()),
-            'twoDeck2' => $this->createShipCoords($twoDeck2->getCountOfDeck()),
-            'twoDeck3' => $this->createShipCoords($twoDeck3->getCountOfDeck()),
-            'oneDeck1' => $this->createShipCoords($oneDeck1->getCountOfDeck()),
-            'oneDeck2' => $this->createShipCoords($oneDeck2->getCountOfDeck()),
-            'oneDeck3' => $this->createShipCoords($oneDeck3->getCountOfDeck()),
-            'oneDeck4' => $this->createShipCoords($oneDeck4->getCountOfDeck()),
+            'aishipsUpdated' => $aishipsUpdated,
+            'deletedItem' => $deletedItem,
+            'miss' => $miss,
+            'isShipAfloat' => $isShipAfloat,
+            'sunkedShip' => $sunkedShip,
+            'isWinner' => $this->isWinner('user')
         ];
     }
-    public function getField()
+
+    public function aiShoot()
     {
-        return $this->field;
+        $Ai = new Ai();
+        $emptytablename = '';
+        $isShipAfloat = '';
+        //Выбор координат для выстрела
+        $res = $Ai->shoot();
+        
+        //выбираем все таблицы из базы с кораблями пользователя
+        $result = pg_query(
+            $this->_userconn, 
+            "SELECT table_name FROM information_schema.tables 
+            WHERE table_schema = 'public';"
+        );
+        //нормализация данных для обработки
+        $tables = pg_fetch_all($result);
+
+        $tablesNormalized = [];
+        foreach (array_values($tables) as $value) {
+            $tablesNormalized[] = $value['table_name'];
+        }
+        //проверка результата выстрела (попадание или промах)
+        $resultOfAiShooting = [];
+        foreach ($tablesNormalized as $tableName) {
+            $responseFromDB = pg_query(
+                $this->_userconn, 
+                "SELECT * FROM {$tableName} 
+                WHERE x = {$res['x']} AND y = {$res['y']};"
+            );
+            if (pg_fetch_all($responseFromDB)) {
+                $emptytablename = $tableName;
+                $resultOfAiShooting[] = pg_fetch_all($responseFromDB);
+                pg_query(
+                    $this->_userconn,
+                    "DELETE FROM {$tableName} 
+                    WHERE y = {$res['y']} 
+                    AND x = {$res['x']};"
+                );
+                break;
+            };
+        }
+        //отправка компьютеру ответа с результатом выстрела (попадание или промах)
+        if (!empty($resultOfAiShooting)) {
+            $res = pg_query(
+                $this->_userconn,
+                "SELECT * FROM {$emptytablename};"
+            );
+            $isShipAfloat = pg_fetch_all($res);
+            $Ai->takeResponseFromUser($resultOfAiShooting, $isShipAfloat);
+        } else {
+            $Ai->takeResponseFromUser($resultOfAiShooting);
+        }
+        //оновление данных по кораблям пользователя с учетом попаданий
+        $userShipsUpdated = [];
+        foreach ($tablesNormalized as $tableName) {
+            $lowershipname = strtolower($tableName);
+            $temp = pg_query(
+                $this->_userconn,
+                "SELECT * FROM {$tableName}"
+            );
+            $resultingArray[$lowershipname] = pg_fetch_all($temp);
+        }
+
+        $this->_userships = $resultingArray;
+
+        return [
+            'resultArr' => $resultingArray,
+            'resOfShooting' => 
+                empty($resultOfAiShooting) ? $res : $resultOfAiShooting,
+            'isShipAfloat' => $isShipAfloat,
+            'sunkedShip' => $emptytablename,
+            'isWinner' => $this->isWinner('ai')
+        ];
     }
-    public function getHalo()
+
+    public function isWinner($player)
     {
-        return $this->halo;
+        $shipsChoice = [
+            'user' => $this->_aiships,
+            'ai' => $this->_userships
+        ];
+        
+        foreach ($shipsChoice[$player] as $ship) {
+            if ($ship) {
+                return false;
+            }
+        }
+        return true;
     }
-}*/
+}

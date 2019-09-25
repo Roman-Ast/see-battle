@@ -84,8 +84,7 @@ class Field
             array_push($halo, [ 'y' => $coordsLastPoint['y'], 'x' => $coordsLastPoint['x'] + 1, ]);
             array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] + 1, ]);
             array_push($this->halo, $halo);
-        }
-        else {
+        } else {
             for ($i = 1; $i < $countOfDecks; $i++) { 
                 $xAuto = $firstPoint['x'];
                 if (isset($field[$firstPoint['y'] + $i][$firstPoint['x']])) {
