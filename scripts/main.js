@@ -8,9 +8,9 @@ $(document).ready(function() {
   const shipHeight = canvasAIWidth / 10;
   const repoOfShips = new Map();
 
-  
-
-  $('#sendShips').removeAttr('disabled');
+  $('#shootbtn').attr('disabled', 'true');
+  $('.postShip').attr('disabled', 'true');
+  $('#sendShips').attr('disabled');
   $('#messages').addClass('alert-primary');
   $('#messages').html(
     `<h4>Добро пожаловать, боец!</h4>
@@ -20,26 +20,34 @@ $(document).ready(function() {
     <h5>Желаем удачи!</h5>`
     );
 
+
+  function isUserCoordsValid(shipType) {
+    const children = $(`#${shipType}`).children();
+    const arrValue = [];
+    const arrBorderColor = [];
+
+    for (let i = 1; i < children.length - 1; i += 1) {
+      const points = $(children[i]).children();
+      for (let k = 1; k < points.length; k++) {
+        arrValue.push(points[k].value);
+        const style = getComputedStyle(points[k]);
+        const borderColor = style.getPropertyValue('border-color');
+        arrBorderColor.push(borderColor);
+      }
+    }
+
+    const isEveryNotEmpty = arrValue.every(el => el !== '');
+    const isEveryValid = arrBorderColor.every(el => el !== 'rgb(255, 0, 0)');
+  
+    return isEveryNotEmpty && isEveryValid;
+  }
+
   $.ajax({
     type: 'GET',
     data: JSON.stringify(canvasAI.width),
     contentType: 'application/json',
     url: '/field'
-  }).done(function(total) {
-
-    const field = total['aiships'];
-    console.log(field);
-    /*for (const ship in field) {
-      for (let i = 0; i < field[ship].length; i++) {
-        ctxAi.fillRect(
-          field[ship][i]['x'] * shipWidth,
-          field[ship][i]['y'] * shipHeight,
-          shipWidth,
-          shipHeight
-        );
-      }
-    }*/
-  });
+  }).done();
 
   $('#typeOfShip').on('change', function() {
     const shipType = $(this)
@@ -49,7 +57,66 @@ $(document).ready(function() {
     $(`#${shipType}`).css({ display: 'flex' });
   });
 
-  $('.submit').on('click', function(e) {
+  $('.x').on('blur', function(e) {
+    e.preventDefault();
+    
+    if (
+      !this.value.length ||
+      this.value.length > 2 ||
+      !this.value.match(/[1-9]/) ||
+      this.value > 10
+      ) {
+      $('#messages').addClass('alert-warning');
+      $('#messages').html(
+        `<h4>Неверные координаты:</h1>
+        <p>укажите координаты в диапозоне от 1 до 10</p>
+        `
+        );
+        $(this).addClass('alertXorY');
+    } else {
+      $('#messages').removeClass('alert-warning');
+      $('#messages').addClass('alert-primary');
+      $('#messages').html(`<h4>Продолжайте!</h1>`);
+      $(this).removeClass('alertXorY');
+    }
+    
+    const shipType = $('#typeOfShip')
+      .find('option:selected')
+      .attr('name');
+    
+      isUserCoordsValid(shipType)
+      ? $('.postShip').removeAttr('disabled')
+      : $('.postShip').attr('disabled', 'true');
+  });
+
+  $('.y').on('blur', function(e) {
+    e.preventDefault();
+
+    if (!this.value.length || this.value.length > 1 || !this.value.match(/[a-j]/i)) {
+      $('#messages').addClass('alert-warning');
+      $('#messages').html(
+        `<h4>Неверные координаты:</h1>
+        <p>укажите координаты в диапозоне от А до J</p>
+        `
+        );
+        $(this).addClass('alertXorY');
+    } else {
+      $('#messages').removeClass('alert-warning');
+      $('#messages').addClass('alert-primary');
+      $('#messages').html(`<h4>Продолжайте!</h1>`);
+      $(this).removeClass('alertXorY');
+    }
+
+    const shipType = $('#typeOfShip')
+      .find('option:selected')
+      .attr('name');
+    
+      isUserCoordsValid(shipType)
+      ? $('.postShip').removeAttr('disabled')
+      : $('.postShip').attr('disabled', 'true');
+  });
+
+  $('.postShip').on('click', function(e) {
     e.preventDefault();
 
     ctxUser.clearRect(0, 0, canvasUser.width, canvasUser.height);
@@ -61,16 +128,18 @@ $(document).ready(function() {
       .children()
       .children('input');
     const coordsArr = [];
+
     for (const input in children) {
       if (children[input].value) {
         coordsArr.push(children[input].value);
       }
     }
-    
+
     const letters = {
       'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4,
       'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9
     };
+
     const readyShipCoords = coordsArr.reduce((acc, el, index, arr) => {
       return index % 2 === 0 ? acc.concat({ x: letters[el] , y: arr[index + 1] - 1}) : acc;
     }, []);
@@ -79,6 +148,7 @@ $(document).ready(function() {
     
     for (let points of repoOfShips.values()) {
       for (const point of points) {
+        ctxUser.fillStyle = 'brown';
         ctxUser.fillRect(
           point.x * shipWidth,
           point.y * shipHeight,
@@ -88,9 +158,7 @@ $(document).ready(function() {
       }
     }
     
-    if (repoOfShips.size >= 2) {
-      
-    }
+    (repoOfShips.size >= 10) ? $('#sendShips').removeAttr('disabled'): null;
   });
 
   $('#sendShips').on('click', function(e) {
@@ -98,7 +166,7 @@ $(document).ready(function() {
 
     const arrForSend = {};
 
-    repoOfShips.forEach( (value, key, map) => {
+    repoOfShips.forEach( (value, key) => {
       arrForSend[key] = value;
     });
 
@@ -108,8 +176,8 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/createUserShips'
     }).done(function(response) {
-      console.log(response);
       const rawShipsWithErrors = [];
+
       if (response.error) {
         repoOfShips.forEach((value, key) => {
           for (let i = 0; i < value.length; i++) {
@@ -121,10 +189,11 @@ $(document).ready(function() {
             }
           }
         });
-        shipsWithErrors = rawShipsWithErrors.reduce((acc, el, i) => {
-          return acc.indexOf(el) !== -1 ? acc : acc.concat(el);
-        }, []);
+        shipsWithErrors = rawShipsWithErrors.reduce((acc, el) =>
+          acc.indexOf(el) !== -1 ? acc : acc.concat(el), []);
+
         let str = '';
+
         for (let i = 0; i < shipsWithErrors.length; i++) {
           str +=
             '<li>' +
@@ -133,6 +202,7 @@ $(document).ready(function() {
               .val() +
             '</li>';
         }
+
         $('#messages').html(
           `<h5>Возможные проблемы</h5> 
           <span>Hеверные координаты в кораблях:</span>
@@ -140,7 +210,6 @@ $(document).ready(function() {
         );
         $('#messages').addClass('alert-danger');
         $('#messages').css({ overflow: 'scroll' });
-        console.log(shipsWithErrors);
       } else {
         $('#messages').html(`<h4>Все готово к началу игры!</h4>`);
         $('#messages').removeClass('alert-danger');
@@ -164,16 +233,21 @@ $(document).ready(function() {
 
     const y = $('#targetY').val() - 1;
     const x = letters[$('#targetX').val()];
-    console.log($('#targetX').val());
+
+    if (!y.match(/[1-9]/)) {
+      $('#messages').html(
+        `<h4>Проверьте координаты!</h4>`
+      );
+      $('')
+    }
 
     $.ajax({
       type: 'POST',
       data: JSON.stringify({ y, x }),
       contentType: 'application/json',
       url: '/usershooting'
-    }).done(function(total) {
-      console.log(total);
-      if (total.repeat) {
+    }).done(function(response) {
+      if (response.repeat) {
         $('#myModal').fadeIn(500);
         $('.modal-body').html('<h4>Вы уже стреляли в этот квадрат!</h4>');
         $('.modal-header').html('<h3>Предупреждение!</h3>');
@@ -184,7 +258,7 @@ $(document).ready(function() {
         });
         return;
       }
-      if (!total['deletedItem']) {
+      if (!response['deletedItem']) {
         $('#messages').removeClass('alert-success');
         $('#messages').addClass('alert-warning');
         $('#messages').html(`<h4>Мимо!</h4>`);
@@ -195,8 +269,8 @@ $(document).ready(function() {
         img.onload = function () {
           ctxAi.drawImage(
             img,
-            total['miss']['x'] * shipHeight,
-            total['miss']['y'] * shipWidth,
+            response['miss']['x'] * shipHeight,
+            response['miss']['y'] * shipWidth,
             35,
             35
           );
@@ -206,33 +280,31 @@ $(document).ready(function() {
         $('#messages').removeClass('alert-warning');
         $('#messages').addClass('alert-success');
         $('#messages').html(`<h4>Попадание!</h4>`);
-         console.log(total['deletedItem']);
+         console.log(response['deletedItem']);
          const img = new Image(30, 30);
          
          img.onload = function () {
            ctxAi.drawImage(
              img,
-             total['deletedItem'][0]['x'] * shipHeight,
-             total['deletedItem'][0]['y'] * shipWidth,
+             response['deletedItem'][0]['x'] * shipHeight,
+             response['deletedItem'][0]['y'] * shipWidth,
              35,
              35
            );
          }
          img.src = "/img/boom.png";
-        if (!total['isShipAfloat']) {
-          console.log(total);
+        if (!response['isShipAfloat']) {
           const nameOfSunkedShip = $('#typeOfShip')
-              .find(`option[name=coords${total['sunkedShip']}]`)
+              .find(`option[name=coords${response['sunkedShip']}]`)
               .val();
           $('#messages').html(
             `<h4>Попадание!</h4>
             <h4>Потоплен корабль ${nameOfSunkedShip}!</h4>`
-
           );
         }
-        if (total.isWinner) {
+        if (response.isWinner) {
           $('#myModal').fadeIn(500);
-          $('body').css({'background': '#333'});
+          $('body').css({'background': 'rgba(33,33,33,.7)'});
           $('.modal-body').html('<h4>Вы победили!</h4>');
           $('.modal-header').html('<h3>Поздравляем!</h3>');
           $('#finish').on('click', function() {
@@ -241,19 +313,6 @@ $(document).ready(function() {
           });
         }
       }
-      const newField = total['aishipsUpdated'];
-      //ctxAi.clearRect(0, 0, canvasUser.width, canvasUser.height);
-
-      /*for (const ship in newField) {
-        for (let i = 0; i < newField[ship].length; i++) {
-          ctxAi.fillRect(
-            newField[ship][i]['x'] * shipWidth,
-            newField[ship][i]['y'] * shipHeight,
-            shipWidth,
-            shipHeight
-          );
-        }
-      }*/
     });
   });
 
@@ -270,7 +329,6 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/aishooting'
     }).done(function (response) {
-      console.log(response);
       const points = [];
       for (const point in response['resultArr']) {
         if (response['resultArr'][point]) {
@@ -320,7 +378,6 @@ $(document).ready(function() {
       }
       
       ctxUser.clearRect(0, 0, canvasUser.width, canvasUser.height);
-      console.log(points);
       points.forEach(function (point, i, arr) {
         point.forEach(function (ship, i, arr) {
           ctxUser.fillRect(
@@ -351,22 +408,11 @@ $(document).ready(function() {
         <span class="sr-only">Loading...</span>
       </div>
     `);
-    /*$('#messages').html(
-      `<h4>Ход компьютера...</h4>
-      <div class="progress" style="height: 20px;">
-        <div class="progress-bar"
-        role="progressbar" aria-valuenow="10" aria-valuemin="0"
-        aria-valuemax="100" style="width: 100%"></div>
-      </div>`
-      );
-    let counter = 0;
-    let intForProgressBar = setInterval(function () {
-      counter += 4;
-      $('.progress').css({'width': counter});
-    }, 22);*/
     setTimeout(aiShooting, 2000, /*intForProgressBar*/);
   }
   $('#aishoot').on('click', timer);
+
+  /*//this functionality is convenient to use when debugging, filling in the user field in one click
 
   $('#fillTheUserField').on('click', function (e) {
     e.preventDefault();
@@ -423,5 +469,5 @@ $(document).ready(function() {
     }).done(function (response) {
       console.log(response);
     });
-  });
+  });*/
 });

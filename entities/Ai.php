@@ -308,5 +308,4 @@ class Ai
             pg_insert($this->connection, 'halo', $point);
         }
     }
-    
 }

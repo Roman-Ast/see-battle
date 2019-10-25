@@ -1,4 +1,7 @@
-#wrapper {
+body{
+  background-image: url('../img/ripples.png') !important;
+}
+#wrapper {  
   width: 95%;
   margin: 5% auto;
   display: flex;
@@ -19,25 +22,52 @@
   background-image: url("/img/Mar004.png");
   background-size: cover;
 }
-#y {
+.y {
   width: 40px;
+  border-radius: 2px;
 }
-#x {
+.x {
+  border-radius: 2px;
   width: 40px;
 }
 #userControls {
-  border: 1px solid #333;
+  border: 1px solid #888;
   width: 30%;
 }
+.alertXorY{
+  border-color: red;
+}
+#typeOfShip{
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: -3%;
+  width: 98%;
 
+}
 .coords {
+  padding: 2px;
+  margin: 0 auto;
+  width: 97%;
   display: none;
-  border-bottom: 1px solid #333;
+  flex-direction: column;
+  justify-content: space-around;
+  border-bottom: 1px solid #888;
+  border-left: 1px solid #888;
+  border-right: 1px solid #888;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background-color: #ddd;
 }
 .points {
+  width: 97%;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+.pointsHeader {
   display: flex;
   justify-content: space-between;
   width: 100%;
@@ -65,13 +95,17 @@
   flex-direction: column;
   align-content: flex-start;
   justify-content: baseline;
-  border-bottom: 1px solid #333;
+  border-bottom: 5px solid rgb(241, 120, 7);
   font-size: 12px;
+}
+.postShip{
+  font-size: 0.9rem;
+  left: calc(100% / 3.33);
 }
 #sendShips {
   position: absolute;
   bottom: 0;
-  left: 30%;
+  left: calc(100% / 3.33);
 }
 #Userform {
   width: 100%;

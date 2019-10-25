@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Document</title>
-    <link rel="stylesheet" href="../styles/main.css" />
+    <title>See Battle</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="icon" href="../img/shipIcon.png">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script text="javascript" src="../scripts/jquery_min.js"></script>
   </head>
@@ -31,8 +32,8 @@
       <div id="userControls">
         <div id="messages" class="alert"></div>
         <div id="Userform">
-        <form action="/createUserShips" method="POST" >
-          <select id="typeOfShip">
+        <form action="/createUserShips" method="POST">
+          <select id="typeOfShip" class="form-control">
             <option selected>Выберите тип корабля</option>
             <option name="coordsfourdeck">Четырехпалубный</option>
             <option name="coordsthreedeck1">Трехпалубный 1</option>
@@ -46,192 +47,192 @@
             <option name="coordsonedeck4">Однопалубный 4</option>
           </select>
           <div id="coordsfourdeck" class="coords">
-            <div class="points">
+            <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
               <span>Number</span>
             </div>
             <div class="points">
               <label class="labels">Первая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
             <div class="points">
               <label class="labels">Вторая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
             <div class="points">
               <label class="labels">Третья палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
             <div class="points">
               <label class="labels">Четвертая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
-            <input type="submit" value="Разместить" class="submit">
+            <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
           <div id="coordsthreedeck1" class="coords">
-            <div class="points">
+            <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
               <span>Number</span>
             </div>
             <div id="firstPoint" class="points">
               <label class="labels">Первая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
             <div id="secondPoint" class="points">
               <label class="labels">Вторая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
             <div id="thirdPoint" class="points">
               <label class="labels">Третья палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
-            <input type="submit" value="Разместить" class="submit">
+            <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
           <div id="coordsthreedeck2" class="coords">
-            <div class="points">
+            <div class="pointsHeader">
               <label class="labels">Координаты</label>
-              <span>Letter</span>
-              <span>Number</span>
+              <span>Буква</span>
+              <span>Цифра</span>
             </div>
             <div id="firstPoint" class="points">
               <label class="labels">Первая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
             <div id="secondPoint" class="points">
               <label class="labels">Вторая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
             <div id="thirdPoint" class="points">
               <label class="labels">Третья палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
-            <input type="submit" value="Разместить" class="submit">
+            <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
           <div id="coordstwodeck1" class="coords">
-            <div class="points">
+            <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
               <span>Number</span>
             </div>
             <div id="firstPoint" class="points">
               <label class="labels">Первая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
             <div id="secondPoint" class="points">
               <label class="labels">Вторая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
-            <input type="submit" value="Разместить" class="submit">
+            <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
           <div id="coordstwodeck2" class="coords">
-            <div class="points">
+            <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
               <span>Number</span>
             </div>
             <div id="firstPoint" class="points">
               <label class="labels">Первая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
             <div id="secondPoint" class="points">
               <label class="labels">Вторая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
-            <input type="submit" value="Разместить" class="submit">
+            <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
           <div id="coordstwodeck3" class="coords">
-            <div class="points">
+            <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
               <span>Number</span>
             </div>
             <div id="firstPoint" class="points">
               <label class="labels">Первая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
             <div id="secondPoint" class="points">
               <label class="labels">Вторая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
-            <input type="submit" value="Разместить" class="submit">
+            <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
           <div id="coordsonedeck1" class="coords">
-            <div class="points">
+            <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
               <span>Number</span>
             </div>
             <div id="firstPoint" class="points">
               <label class="labels">Первая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
-            <input type="submit" value="Разместить" class="submit">
+            <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
           <div id="coordsonedeck2" class="coords">
-            <div class="points">
+            <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
               <span>Number</span>
             </div>
             <div id="firstPoint" class="points">
               <label class="labels">Первая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
-            <input type="submit" value="Разместить" class="submit">
+            <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
           <div id="coordsonedeck3" class="coords">
-            <div class="points">
+            <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
               <span>Number</span>
             </div>
             <div id="firstPoint" class="points">
               <label class="labels">Первая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
-            <input type="submit" value="Разместить" class="submit">
+            <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
           <div id="coordsonedeck4" class="coords">
-            <div class="points">
+            <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
               <span>Number</span>
             </div>
             <div id="firstPoint" class="points">
               <label class="labels">Первая палуба</label>
-              <input type="text" name="y" id="y">
-              <input type="text" name="x" id="x">
+              <input type="text" name="y" class="y">
+              <input type="text" name="x" class="x">
             </div>
-            <input type="submit" value="Разместить" class="submit">
+            <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
         </div>
         </form>
         <div id="shoot">
           <form id="shootForm" action="/usershooting" method="POST">
-            <label for="targetX">Letters</label>
+            <label for="targetX">Буква</label>
             <input type="text" name="y" id="targetX" style="width:50px">
-            <label for="targetY">Numbers</label>
+            <label for="targetY">Цифра</label>
             <input type="text" name="x" id="targetY" style="width:50px">
             <input type="submit" value="shoot" id="shootbtn">
           </form>
@@ -242,13 +243,13 @@
           </form>
         </div>
         <form>
-          <input type="submit" disabled="disabled" value="Отправить корабли" id="sendShips">
+          <input type="submit" disabled="disabled" value="Отправить корабли" id="sendShips" class="btn btn-success">
         </form>
       </div>
     </div>
-    <form action="createUserShips" method="POST">
+    <!--<form action="createUserShips" method="POST">
       <input type="submit" value="fill" id="fillTheUserField">
-    </form>
+    </form>-->
     
 
     <script text="javascript" src="../scripts/main.js"></script>
