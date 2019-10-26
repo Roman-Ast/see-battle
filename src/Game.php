@@ -53,7 +53,7 @@ class Game
                     x integer
                 );"
             );
-        }
+        } 
         foreach ($battleField as $shipname => $points) {
             pg_query($this->_aiconn, "TRUNCATE {$shipname}");
             foreach ($points as $key => $point) {
@@ -68,10 +68,10 @@ class Game
             $aiships[$shipname] = pg_fetch_all($result);
         }
 
-        foreach ($battleField as $shipname => $points) {
+        /*foreach ($battleField as $shipname => $points) {
             $lowershipname = strtolower($shipname);
             pg_query($this->_userconn, "TRUNCATE {$lowershipname}");
-        }
+        }*/
 
         pg_query($this->_aimemory, "TRUNCATE hits");
         pg_query($this->_aimemory, "TRUNCATE misses");
@@ -276,6 +276,10 @@ class Game
             if ($ship) {
                 return false;
             }
+        }
+        foreach ($battleField as $shipname => $points) {
+            $lowershipname = strtolower($shipname);
+            pg_query($this->_userconn, "TRUNCATE {$lowershipname}");
         }
         return true;
     }

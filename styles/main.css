@@ -1,6 +1,49 @@
 body{
   background-image: url('../img/ripples.png') !important;
 }
+#myModal{
+  width: 100%;
+  height: 100vh;
+  margin-top: -5%;
+  position: fixed;
+  z-index: 100;
+  background-color: #333;
+  opacity: 0.9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  display: none;
+}
+.modal-dialog{
+  width: 30% !important;
+  height: 30% !important;
+  background-color: white !important;
+}
+.modal-content{
+  width: 100% !important;
+  height: 100% !important;
+  background-color: white !important;
+}
+.modal-body{
+  text-align: center;
+}
+#canvasAiWrapper{
+  background-image: url(/img/coords.png);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 430px;
+  height: 430px;
+}
+#canvasUserWrapper{
+  background-image: url(/img/coords.png);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 430px;
+  height: 430px;
+}
 #wrapper {  
   width: 95%;
   margin: 5% auto;
@@ -100,12 +143,12 @@ body{
 }
 .postShip{
   font-size: 0.9rem;
-  left: calc(100% / 3.33);
+  left: calc(100% / 3);
 }
 #sendShips {
   position: absolute;
   bottom: 0;
-  left: calc(100% / 3.33);
+  left: calc(100% / 3);
 }
 #Userform {
   width: 100%;
@@ -130,47 +173,4 @@ body{
 }
 #next{
   display: none; 
-}
-#myModal{
-  width: 100%;
-  height: 100vh;
-  margin-top: -5%;
-  position: fixed;
-  z-index: 100;
-  background-color: #333;
-  opacity: 0.9;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  display: none;
-}
-.modal-dialog{
-  width: 30% !important;
-  height: 30% !important;
-  background-color: white !important;
-}
-.modal-content{
-  width: 100% !important;
-  height: 100% !important;
-  background-color: white !important;
-}
-.modal-body{
-  text-align: center;
-}
-#canvasAiWrapper{
-  background-image: url(/img/coords.png);
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  width: 430px;
-  height: 430px;
-}
-#canvasUserWrapper{
-  background-image: url(/img/coords.png);
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  width: 430px;
-  height: 430px;
 }

@@ -138,16 +138,16 @@ class Field
         $oneDeck4 = new One_Deck();
 
         $this->battleField = [
-            'fourDeck' => $this->createShipCoords($fourDeckShip->getCountOfDeck()),
-            'threeDeck1' => $this->createShipCoords($threeDeck1->getCountOfDeck()),
-            'threeDeck2' => $this->createShipCoords($threeDeck2->getCountOfDeck()),
-            'twoDeck1' => $this->createShipCoords($twoDeck1->getCountOfDeck()),
-            'twoDeck2' => $this->createShipCoords($twoDeck2->getCountOfDeck()),
-            'twoDeck3' => $this->createShipCoords($twoDeck3->getCountOfDeck()),
-            'oneDeck1' => $this->createShipCoords($oneDeck1->getCountOfDeck()),
-            'oneDeck2' => $this->createShipCoords($oneDeck2->getCountOfDeck()),
-            'oneDeck3' => $this->createShipCoords($oneDeck3->getCountOfDeck()),
-            'oneDeck4' => $this->createShipCoords($oneDeck4->getCountOfDeck()),
+            'fourdeck' => $this->createShipCoords($fourDeckShip->getCountOfDeck()),
+            'threedeck1' => $this->createShipCoords($threeDeck1->getCountOfDeck()),
+            'threedeck2' => $this->createShipCoords($threeDeck2->getCountOfDeck()),
+            'twodeck1' => $this->createShipCoords($twoDeck1->getCountOfDeck()),
+            'twodeck2' => $this->createShipCoords($twoDeck2->getCountOfDeck()),
+            'twodeck3' => $this->createShipCoords($twoDeck3->getCountOfDeck()),
+            'onedeck1' => $this->createShipCoords($oneDeck1->getCountOfDeck()),
+            'onedeck2' => $this->createShipCoords($oneDeck2->getCountOfDeck()),
+            'onedeck3' => $this->createShipCoords($oneDeck3->getCountOfDeck()),
+            'onedeck4' => $this->createShipCoords($oneDeck4->getCountOfDeck()),
         ];
 
         return $this->battleField;

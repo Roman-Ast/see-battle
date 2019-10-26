@@ -35,20 +35,20 @@
         <form action="/createUserShips" method="POST">
           <select id="typeOfShip" class="form-control">
             <option selected>Выберите тип корабля</option>
-            <option name="coordsfourdeck">Четырехпалубный</option>
-            <option name="coordsthreedeck1">Трехпалубный 1</option>
-            <option name="coordsthreedeck2">Трехпалубный 2</option>
-            <option name="coordstwodeck1">Двухпалубный 1</option>
-            <option name="coordstwodeck2">Двухпалубный 2</option>
-            <option name="coordstwodeck3">Двухпалубный 3</option>
-            <option name="coordsonedeck1">Однопалубный 1</option>
-            <option name="coordsonedeck2">Однопалубный 2</option>
-            <option name="coordsonedeck3">Однопалубный 3</option>
-            <option name="coordsonedeck4">Однопалубный 4</option>
+            <option name="fourdeck">Четырехпалубный</option>
+            <option name="threedeck1">Трехпалубный 1</option>
+            <option name="threedeck2">Трехпалубный 2</option>
+            <option name="twodeck1">Двухпалубный 1</option>
+            <option name="twodeck2">Двухпалубный 2</option>
+            <option name="twodeck3">Двухпалубный 3</option>
+            <option name="onedeck1">Однопалубный 1</option>
+            <option name="onedeck2">Однопалубный 2</option>
+            <option name="onedeck3">Однопалубный 3</option>
+            <option name="onedeck4">Однопалубный 4</option>
           </select>
-          <div id="coordsfourdeck" class="coords">
+          <div id="fourdeck" class="coords">
             <div class="pointsHeader">
-              <label class="labels">Координаты</label>
+              <label class="labels">Координаты</label> 
               <span>Letter</span>
               <span>Number</span>
             </div>
@@ -74,7 +74,7 @@
             </div>
             <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
-          <div id="coordsthreedeck1" class="coords">
+          <div id="threedeck1" class="coords">
             <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
@@ -97,7 +97,7 @@
             </div>
             <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
-          <div id="coordsthreedeck2" class="coords">
+          <div id="threedeck2" class="coords">
             <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Буква</span>
@@ -120,7 +120,7 @@
             </div>
             <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
-          <div id="coordstwodeck1" class="coords">
+          <div id="twodeck1" class="coords">
             <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
@@ -138,7 +138,7 @@
             </div>
             <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
-          <div id="coordstwodeck2" class="coords">
+          <div id="twodeck2" class="coords">
             <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
@@ -156,7 +156,7 @@
             </div>
             <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
-          <div id="coordstwodeck3" class="coords">
+          <div id="twodeck3" class="coords">
             <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
@@ -174,7 +174,7 @@
             </div>
             <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
-          <div id="coordsonedeck1" class="coords">
+          <div id="onedeck1" class="coords">
             <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
@@ -187,7 +187,7 @@
             </div>
             <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
-          <div id="coordsonedeck2" class="coords">
+          <div id="onedeck2" class="coords">
             <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
@@ -200,7 +200,7 @@
             </div>
             <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
-          <div id="coordsonedeck3" class="coords">
+          <div id="onedeck3" class="coords">
             <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
@@ -213,7 +213,7 @@
             </div>
             <input type="submit" value="Разместить" class="postShip btn btn-success">
           </div>
-          <div id="coordsonedeck4" class="coords">
+          <div id="onedeck4" class="coords">
             <div class="pointsHeader">
               <label class="labels">Координаты</label>
               <span>Letter</span>
@@ -231,10 +231,10 @@
         <div id="shoot">
           <form id="shootForm" action="/usershooting" method="POST">
             <label for="targetX">Буква</label>
-            <input type="text" name="y" id="targetX" style="width:50px">
+            <input type="text" name="x" id="targetX" style="width:50px">
             <label for="targetY">Цифра</label>
-            <input type="text" name="x" id="targetY" style="width:50px">
-            <input type="submit" value="shoot" id="shootbtn">
+            <input type="text" name="y" id="targetY" style="width:50px">
+            <input type="submit" value="shoot" id="userShoot">
           </form>
         </div>
         <div id="next">
@@ -247,9 +247,9 @@
         </form>
       </div>
     </div>
-    <!--<form action="createUserShips" method="POST">
+    <form action="createUserShips" method="POST">
       <input type="submit" value="fill" id="fillTheUserField">
-    </form>-->
+    </form>
     
 
     <script text="javascript" src="../scripts/main.js"></script>

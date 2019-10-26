@@ -8,9 +8,9 @@ $(document).ready(function() {
   const shipHeight = canvasAIWidth / 10;
   const repoOfShips = new Map();
 
-  $('#shootbtn').attr('disabled', 'true');
+  $('#userShoot').attr('disabled', 'true');
   $('.postShip').attr('disabled', 'true');
-  $('#sendShips').attr('disabled');
+  $('#sendShips').removeAttr('disabled');
   $('#messages').addClass('alert-primary');
   $('#messages').html(
     `<h4>Добро пожаловать, боец!</h4>
@@ -21,7 +21,7 @@ $(document).ready(function() {
     );
 
 
-  function isUserCoordsValid(shipType) {
+  const isUserSpecifiesCoordsValid = (shipType) => {
     const children = $(`#${shipType}`).children();
     const arrValue = [];
     const arrBorderColor = [];
@@ -40,7 +40,21 @@ $(document).ready(function() {
     const isEveryValid = arrBorderColor.every(el => el !== 'rgb(255, 0, 0)');
   
     return isEveryNotEmpty && isEveryValid;
-  }
+  };
+
+  const isValidShootingUserCoords = () => {
+    const objX = document.querySelector('#targetX');
+    const objY = document.querySelector('#targetY');
+    
+    const styleX = getComputedStyle(objX);
+    const styleY = getComputedStyle(objY);
+    const borderX = styleX.getPropertyValue('border-color');
+    const borderY = styleY.getPropertyValue('border-color');
+    const valueX = objX.value;
+    const valueY = objY.value;
+    return borderX !== 'rgb(255, 0, 0)' && borderY !== 'rgb(255, 0, 0)'
+      && valueX !== '' && valueY !== '';
+  } ;
 
   $.ajax({
     type: 'GET',
@@ -63,7 +77,7 @@ $(document).ready(function() {
     if (
       !this.value.length ||
       this.value.length > 2 ||
-      !this.value.match(/[1-9]/) ||
+      !this.value.match(/^[1-9]+$/) ||
       this.value > 10
       ) {
       $('#messages').addClass('alert-warning');
@@ -84,7 +98,7 @@ $(document).ready(function() {
       .find('option:selected')
       .attr('name');
     
-      isUserCoordsValid(shipType)
+      isUserSpecifiesCoordsValid(shipType)
       ? $('.postShip').removeAttr('disabled')
       : $('.postShip').attr('disabled', 'true');
   });
@@ -92,7 +106,7 @@ $(document).ready(function() {
   $('.y').on('blur', function(e) {
     e.preventDefault();
 
-    if (!this.value.length || this.value.length > 1 || !this.value.match(/[a-j]/i)) {
+    if (this.value.length !== 1 || !this.value.match(/^[a-j]+$/i)) {
       $('#messages').addClass('alert-warning');
       $('#messages').html(
         `<h4>Неверные координаты:</h1>
@@ -111,10 +125,53 @@ $(document).ready(function() {
       .find('option:selected')
       .attr('name');
     
-      isUserCoordsValid(shipType)
+      isUserSpecifiesCoordsValid(shipType)
       ? $('.postShip').removeAttr('disabled')
       : $('.postShip').attr('disabled', 'true');
   });
+
+  $('#targetX').on('blur', function (e) {
+    e.preventDefault();
+    
+    if (this.value.length !== 1 || !this.value.match(/^[a-j]+$/i)) {
+      $('#messages').addClass('alert-warning');
+      $('#messages').html(
+        `<h4>Проверьте координаты!</h4>`
+      );
+      $(this).addClass('alertXorY');
+    } else {
+      $('#messages').removeClass('alert-warning');
+      $('#messages').addClass('alert-success');
+      $(this).removeClass('alertXorY');
+    }
+    
+    isValidShootingUserCoords() ? $('#userShoot').removeAttr('disabled')
+      : $('#userShoot').attr('disabled', 'true');
+  })
+
+  $('#targetY').on('blur', function (e) {
+    e.preventDefault();
+
+    if (
+      !this.value.length ||
+      this.value.length > 2 ||
+      !this.value.match(/^[0-9]+$/) ||
+      this.value > 10
+    ) {
+      $('#messages').addClass('alert-warning');
+      $('#messages').html(
+        `<h4>Проверьте координаты!</h4>`
+      );
+      $(this).addClass('alertXorY');
+    } else {
+      $('#messages').removeClass('alert-warning');
+      $('#messages').addClass('alert-success');
+      $(this).removeClass('alertXorY');
+    }
+
+    isValidShootingUserCoords() ? $('#userShoot').removeAttr('disabled')
+      : $('#userShoot').attr('disabled', 'true');
+  })
 
   $('.postShip').on('click', function(e) {
     e.preventDefault();
@@ -158,7 +215,7 @@ $(document).ready(function() {
       }
     }
     
-    (repoOfShips.size >= 10) ? $('#sendShips').removeAttr('disabled'): null;
+    (repoOfShips.size >= 0) ? $('#sendShips').removeAttr('disabled'): null;
   });
 
   $('#sendShips').on('click', function(e) {
@@ -188,7 +245,7 @@ $(document).ready(function() {
               rawShipsWithErrors.push(key);
             }
           }
-        });
+        }); 
         shipsWithErrors = rawShipsWithErrors.reduce((acc, el) =>
           acc.indexOf(el) !== -1 ? acc : acc.concat(el), []);
 
@@ -223,7 +280,7 @@ $(document).ready(function() {
     });
   });
 
-  $('#shootbtn').on('click', function(e) {
+  $('#userShoot').on('click', function(e) {
     e.preventDefault();
 
     const letters = {
@@ -233,13 +290,6 @@ $(document).ready(function() {
 
     const y = $('#targetY').val() - 1;
     const x = letters[$('#targetX').val()];
-
-    if (!y.match(/[1-9]/)) {
-      $('#messages').html(
-        `<h4>Проверьте координаты!</h4>`
-      );
-      $('')
-    }
 
     $.ajax({
       type: 'POST',
@@ -412,7 +462,7 @@ $(document).ready(function() {
   }
   $('#aishoot').on('click', timer);
 
-  /*//this functionality is convenient to use when debugging, filling in the user field in one click
+  //this functionality is convenient to use when debugging, filling in the user field in one click
 
   $('#fillTheUserField').on('click', function (e) {
     e.preventDefault();
@@ -469,5 +519,5 @@ $(document).ready(function() {
     }).done(function (response) {
       console.log(response);
     });
-  });*/
+  });
 });
