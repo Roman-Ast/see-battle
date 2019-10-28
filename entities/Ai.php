@@ -2,6 +2,8 @@
 
 namespace seeBattle\entities;
 
+use seeBattle\resources\ShipsCreator;
+
 class Ai
 {
     private $connection;
@@ -11,7 +13,7 @@ class Ai
     private $ships;
     private $misses;
 
-    public function __construct()
+    public function __construct() 
     {
         $this->connection = pg_connect("host=localhost dbname=aimemory user=roman password=rimma");
         pg_query(
@@ -42,6 +44,12 @@ class Ai
                 x integer
             );"
         );
+    }
+
+    public function createShips()
+    {
+        $shipCreator = new ShipsCreator();
+        return $shipCreator->createBattleShips();
     }
 
     private function randomDirection()
@@ -99,8 +107,6 @@ class Ai
 
         $res = pg_query($this->connection, "SELECT * FROM halo;");
         $halo = $this->strToInt(pg_fetch_all($res));
-
-        
 
         $X = '';
         $Y = '';

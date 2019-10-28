@@ -4,7 +4,7 @@ namespace seeBattle\src;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use seeBattle\user_entities\Validator;
+use seeBattle\resources\Validator;
 use seeBattle\entities\Field;
 use seeBattle\entities\Ai;
 
@@ -40,12 +40,13 @@ class Game
         );
     }
 
-    public function createAiField()
+    public function getAiField()
     {
-        $field = new Field(10, 10);
-        $battleField = $field->createBattleField();
+        $ai = new Ai();
+        $aiShips = $ai->createShips();
         
-        foreach ($battleField as $shipname => $points) {
+
+        foreach ($aiShips as $shipname => $points) {
             pg_query(
                 $this->_aiconn, 
                 "CREATE TABLE IF NOT EXISTS {$shipname}(
@@ -54,21 +55,21 @@ class Game
                 );"
             );
         } 
-        foreach ($battleField as $shipname => $points) {
+        foreach ($aiShips as $shipname => $points) {
             pg_query($this->_aiconn, "TRUNCATE {$shipname}");
             foreach ($points as $key => $point) {
                 pg_insert($this->_aiconn, strtolower($shipname), $point);
             }
         }
-        $aiships = [];
+        $aiShipsFromDB = [];
 
-        foreach ($battleField as $shipname => $points) {
+        foreach ($aiShips as $shipname => $points) {
             $lowershipname = strtolower($shipname);
             $result = pg_query($this->_aiconn, "SELECT * FROM {$lowershipname}");
-            $aiships[$shipname] = pg_fetch_all($result);
+            $aiShipsFromDB[$shipname] = pg_fetch_all($result);
         }
 
-        foreach ($battleField as $shipname => $points) {
+        foreach ($aiShipsFromDB as $shipname => $points) {
             $lowershipname = strtolower($shipname);
             pg_query($this->_userconn, "TRUNCATE {$lowershipname}");
         }
@@ -79,10 +80,10 @@ class Game
         pg_query($this->_aimemory, "TRUNCATE halo");
         pg_query($this->_userShoots, "TRUNCATE usershoots");
 
-        return ['aiships' => $aiships];
+        return ['aiships' => $aiShipsFromDB];
     }
 
-    public function createUserField($shipCoords)
+    public function checkUserField($shipCoords)
     {
         $validator = new Validator();
         $validatedUserField = $validator->validate($shipCoords);
@@ -116,7 +117,7 @@ class Game
         return $userShips;
     }
 
-    public function userShoot($targetCoords)
+    public function userStep($targetCoords)
     {
         $miss = '';
         $isShipAfloat = '';
@@ -190,7 +191,7 @@ class Game
         ];
     }
 
-    public function aiShoot()
+    public function aiStep()
     {
         $Ai = new Ai();
         $emptytablename = '';

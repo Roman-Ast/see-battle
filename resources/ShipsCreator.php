@@ -1,6 +1,6 @@
 <?php
 
-namespace seeBattle\entities;
+namespace seeBattle\resources;
 
 use seeBattle\entities\ships\One_deck;
 use seeBattle\entities\ships\Two_deck;
@@ -9,7 +9,7 @@ use seeBattle\entities\ships\Four_deck;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-class Field
+class ShipsCreator
 {
     private $field = [];
     private $width;
@@ -17,10 +17,10 @@ class Field
     public $halo = [];
     private $battleField;
 
-    public function __construct(int $width, int $height)
+    public function __construct()
     {
-        $this->width = $width;
-        $this->height = $height;
+        $this->width = 10;
+        $this->height = 10;
         $this->field = $this->createField();
     }
 
@@ -124,7 +124,7 @@ class Field
         $this->field = array_slice($field, 0);
         return $coordinates;
     }
-    public function createBattleField()
+    public function createBattleShips()
     {
         $fourDeckShip = new Four_deck();
         $threeDeck1 = new Three_Deck();

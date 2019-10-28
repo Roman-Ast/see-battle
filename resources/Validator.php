@@ -1,40 +1,46 @@
 <?php
 
-namespace seeBattle\user_entities;
-
-use seeBattle\user_entities\User_Field;
-use seeBattle\entities\Field;
+namespace seeBattle\resources;
 
 require __DIR__ . '/../vendor/autoload.php';
 
 class Validator
 {
-  private $halo;
-  private $field;
+    private $halo;
+    private $field;
 
-  public function __construct()
-  {
+    public function __construct()
+    {
         $this->halo = [];
-        $user = new User_Field(10, 10);
-        $this->field = $user->createField();
-  }
+        $this->field = $this->createField(10, 10);
+    }
 
-  public function validate($shipCoords)
-  {
-        $onlyPoints = [];
-        $values = array_values($shipCoords);
-
-        for ($i=0; $i < count($shipCoords); $i++) { 
-            $onlyPoints[$i] = $values[$i];
-        }
-        foreach ($onlyPoints as $ship) {
-            if (isset($this->validateShipCoords($ship)['error'])) {
-                return $this->validateShipCoords($ship);
+    public function createField(int $width, int $height)
+        {
+            for ($i = 0; $i < $height; $i++) { 
+                $this->field[$i] = [];
+                for ($k = 0; $k < $width; $k++) { 
+                    $this->field[$i][$k] = $k; 
+                }
             }
+            return $this->field;
         }
-        return $shipCoords;
-  }
-  public function validateShipCoords($shipCoords)
+    public function validate($shipCoords)
+    {
+            $onlyPoints = [];
+            $values = array_values($shipCoords);
+
+            for ($i=0; $i < count($shipCoords); $i++) { 
+                $onlyPoints[$i] = $values[$i];
+            }
+            foreach ($onlyPoints as $ship) {
+                if (isset($this->validateShipCoords($ship)['error'])) {
+                    return $this->validateShipCoords($ship);
+                }
+            }
+            return $shipCoords;
+    }
+    public function validateShipCoords($shipCoords)
     {
         $coordsFromUser = $shipCoords;
 

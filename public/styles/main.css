@@ -28,7 +28,7 @@ body{
   text-align: center;
 }
 #canvasAiWrapper{
-  background-image: url(/img/coords.png);
+  background-image: url('../img/coords.png');
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
@@ -36,7 +36,7 @@ body{
   height: 430px;
 }
 #canvasUserWrapper{
-  background-image: url(/img/coords.png);
+  background-image: url('../img/coords.png');
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
@@ -54,14 +54,14 @@ body{
   border: 1px solid #333;
   max-width: 500px;
   max-height: 500px;
-  background-image: url("/img/Mar004.png");
+  background-image: url("../img/Mar004.png");
   background-size: cover;
 }
 #canvasUser {
   border: 1px solid #333;
   max-width: 500px;
   max-height: 500px;
-  background-image: url("/img/Mar004.png");
+  background-image: url("../img/Mar004.png");
   background-size: cover;
 }
 .y {
@@ -147,7 +147,7 @@ body{
 #sendShips {
   position: absolute;
   bottom: 0;
-  left: calc(100% / 3);
+  left: calc(100% / 3.5);
 }
 #Userform {
   width: 100%;

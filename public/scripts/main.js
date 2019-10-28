@@ -62,7 +62,7 @@ $(document).ready(function() {
     contentType: 'application/json',
     url: '/getAiShips'
   }).done();
-
+  
   $('#typeOfShip').on('change', function() {
     const shipType = $(this)
       .find('option:selected')
@@ -71,7 +71,7 @@ $(document).ready(function() {
     $(`#${shipType}`).css({ display: 'flex' });
   });
 
-  $('.x').on('blur', function(e) {
+  $('.x').on('input', function(e) {
     e.preventDefault();
     
     if (
@@ -103,7 +103,7 @@ $(document).ready(function() {
       : $('.postShip').attr('disabled', 'true');
   });
 
-  $('.y').on('blur', function(e) {
+  $('.y').on('input', function(e) {
     e.preventDefault();
 
     if (this.value.length !== 1 || !this.value.match(/^[a-j]+$/i)) {
@@ -130,7 +130,7 @@ $(document).ready(function() {
       : $('.postShip').attr('disabled', 'true');
   });
 
-  $('#targetX').on('blur', function (e) {
+  $('#targetX').on('input', function (e) {
     e.preventDefault();
     
     if (this.value.length !== 1 || !this.value.match(/^[a-j]+$/i)) {
@@ -141,6 +141,9 @@ $(document).ready(function() {
       $(this).addClass('alertXorY');
     } else {
       $('#messages').removeClass('alert-warning');
+      $('#messages').html(
+        `<h4>Продолжайте!</h4>`
+      );
       $('#messages').addClass('alert-success');
       $(this).removeClass('alertXorY');
     }
@@ -149,7 +152,7 @@ $(document).ready(function() {
       : $('#userShoot').attr('disabled', 'true');
   })
 
-  $('#targetY').on('blur', function (e) {
+  $('#targetY').on('input', function (e) {
     e.preventDefault();
 
     if (
@@ -166,6 +169,9 @@ $(document).ready(function() {
     } else {
       $('#messages').removeClass('alert-warning');
       $('#messages').addClass('alert-success');
+      $('#messages').html(
+        `<h4>Продолжайте!</h4>`
+      );
       $(this).removeClass('alertXorY');
     }
 
@@ -294,7 +300,7 @@ $(document).ready(function() {
       type: 'POST',
       data: JSON.stringify({ y, x }),
       contentType: 'application/json',
-      url: '/usershooting'
+      url: '/userShoot'
     }).done(function(response) {
       if (response.repeat) {
         $('#myModal').fadeIn(500);
@@ -327,7 +333,7 @@ $(document).ready(function() {
             35
           );
         }
-        img.src = "/img/miss.png";
+        img.src = "../public/img/dot.png";
 
         setTimeout(() => {
           $('#aishoot').click();
@@ -352,7 +358,7 @@ $(document).ready(function() {
              35
            );
          }
-         img.src = "/img/boom.png";
+         img.src = "../public/img/yepp.png";
         if (!response['isShipAfloat']) {
           const nameOfSunkedShip = $('#typeOfShip')
               .find(`option[name=${response['sunkedShip']}]`)
@@ -379,7 +385,6 @@ $(document).ready(function() {
   });
 
   const aiShooting = (e, intForProgressBar) => {
-    clearInterval(intForProgressBar);
     $('#targetY').val('');
     $('#targetX').val('');
     $('#messages').removeClass('alert-warning');
@@ -437,7 +442,6 @@ $(document).ready(function() {
             $('#aishoot').click();
           }, 2000);
       } else {
-        $('#userShoot').removeAttr('disabled');
         $('#messages').removeClass('alert-primary');
         $('#messages').removeClass('alert-danger');
         $('#messages').removeClass('alert-warning');
@@ -466,12 +470,14 @@ $(document).ready(function() {
       });
 
       if (response.isWinner) {
+        console.log(response);
         $('#myModal').slideDown(800);
         $('.modal-body').html('<h3>К сожалению, компьютер победил...</h3>');
         $('.modal-header').html('<h3>Миссия провалена!</h3>');
         $('#finish').on('click', function() {
           $(location).attr('href', '/');
         });
+        return;
       }
     });
   }
