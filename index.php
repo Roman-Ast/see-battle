@@ -28,7 +28,7 @@ $app->get('/', function ($request, $response) {
 });
 
 $app->get(
-    '/field', function ($request, $response) {
+    '/getAiShips', function ($request, $response) {
         $game = new Game();
         $aiField = $game->createAiField();
 

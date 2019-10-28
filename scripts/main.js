@@ -60,7 +60,7 @@ $(document).ready(function() {
     type: 'GET',
     data: JSON.stringify(canvasAI.width),
     contentType: 'application/json',
-    url: '/field'
+    url: '/getAiShips'
   }).done();
 
   $('#typeOfShip').on('change', function() {
@@ -272,7 +272,6 @@ $(document).ready(function() {
         $('#messages').removeClass('alert-danger');
         $('#messages').addClass('alert-success');
         $('#messages').css({ overflow: 'hidden' });
-
         $('#sendShips').css({'display': 'none'});
         $('#Userform').css({'display': 'none'});
         $('#shoot').css({'display': 'flex'});
@@ -289,7 +288,7 @@ $(document).ready(function() {
     };
 
     const y = $('#targetY').val() - 1;
-    const x = letters[$('#targetX').val()];
+    const x = letters[$('#targetX').val().toLowerCase()];
 
     $.ajax({
       type: 'POST',
@@ -309,12 +308,15 @@ $(document).ready(function() {
         return;
       }
       if (!response['deletedItem']) {
+
+        $('#userShoot').attr('disabled', 'true');
         $('#messages').removeClass('alert-success');
         $('#messages').addClass('alert-warning');
         $('#messages').html(`<h4>Мимо!</h4>`);
         $('#next').css({'display':'block'});
         $('#shootbtn').attr('disabled', 'disabled');
         $('#aishoot').removeAttr('disabled');
+
         const img = new Image(30, 30);
         img.onload = function () {
           ctxAi.drawImage(
@@ -326,11 +328,19 @@ $(document).ready(function() {
           );
         }
         img.src = "/img/miss.png";
+
+        setTimeout(() => {
+          $('#aishoot').click();
+        }, 1000);
       } else {
+        $('#userShoot').removeAttr('disabled');
         $('#messages').removeClass('alert-warning');
         $('#messages').addClass('alert-success');
-        $('#messages').html(`<h4>Попадание!</h4>`);
-         console.log(response['deletedItem']);
+        $('#messages').html(`
+        <h4>Попадание!</h4>
+        <p>Ваш ход</p>
+        `);
+         
          const img = new Image(30, 30);
          
          img.onload = function () {
@@ -345,13 +355,15 @@ $(document).ready(function() {
          img.src = "/img/boom.png";
         if (!response['isShipAfloat']) {
           const nameOfSunkedShip = $('#typeOfShip')
-              .find(`option[name=coords${response['sunkedShip']}]`)
+              .find(`option[name=${response['sunkedShip']}]`)
               .val();
           $('#messages').html(
-            `<h4>Попадание!</h4>
-            <h4>Потоплен корабль ${nameOfSunkedShip}!</h4>`
+            `<h6>Попадание!</h6>
+            <h4>Потоплен корабль ${nameOfSunkedShip}!</h4>
+            <p>Ваш ход!</p>`
           );
         }
+
         if (response.isWinner) {
           $('#myModal').fadeIn(500);
           $('body').css({'background': 'rgba(33,33,33,.7)'});
@@ -379,6 +391,11 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/aishooting'
     }).done(function (response) {
+      const letters = {
+        '0': 'A', '1': 'B', '2': 'C', '3': 'D', '4': 'E',
+        '5': 'F', '6': 'G', '7': 'H', '8': 'I', '9': 'J'
+      };
+
       const points = [];
       for (const point in response['resultArr']) {
         if (response['resultArr'][point]) {
@@ -387,17 +404,19 @@ $(document).ready(function() {
       }
       
       if (response['resOfShooting'].length > 0) {
+        $('#userShoot').attr('disabled', 'true');
         $('#messages').removeClass('alert-primary');
         $('#messages').addClass('alert-danger');
         $('#messages').html(
           `<p>
           Компьютер нанес удар по координатам 
-          y: ${response['resOfShooting'][0][0]['y']}
-          x: ${response['resOfShooting'][0][0]['x']}</p>
-          <h4>Попадание!</h4>`
+          ${letters[response['resOfShooting'][0][0]['x']]}
+          ${Number(response['resOfShooting'][0][0]['y']) + 1}</p>
+          <h4>Попадание!</h4>
+          <p>...xод компьютера</p>`
           );
           if (response['isShipAfloat'] === false) {
-            console.log(response.sunkedShip);
+            
             const nameOfSunkedShip = $('#typeOfShip')
               .find(`option[name=${response.sunkedShip}]`)
               .val();
@@ -407,21 +426,28 @@ $(document).ready(function() {
             $('#messages').html(
               `<p>
               Компьютер нанес удар по координатам 
-              y: ${response['resOfShooting'][0][0]['y']}
-              x: ${response['resOfShooting'][0][0]['x']}</p>
-              <h4>Потоплен корабль ${nameOfSunkedShip}!</h4>`
+              ${letters[response['resOfShooting'][0][0]['x']]}
+              ${Number(response['resOfShooting'][0][0]['y']) + 1}</p>
+              <h5>Потоплен корабль ${nameOfSunkedShip}!</h5>
+              <p>Ход компьютера</p>`
               );
           }
+
+          setTimeout(() => {
+            $('#aishoot').click();
+          }, 2000);
       } else {
+        $('#userShoot').removeAttr('disabled');
         $('#messages').removeClass('alert-primary');
         $('#messages').removeClass('alert-danger');
         $('#messages').removeClass('alert-warning');
         $('#messages').addClass('alert-success');
         $('#messages').html(
           `<p>Компьютер нанес удар по координатам 
-          y: ${response['resOfShooting']['y']}
-          x: ${response['resOfShooting']['x']}</p>
-          </h2>ПРОМАX!</h2>`
+          ${letters[response['resOfShooting']['x']]}
+          ${Number(response['resOfShooting']['y']) + 1}</p>
+          </h2>ПРОМАX!</h2>
+          <p>Ваш ход!</p>`
           );
           $('#aishoot').attr('disabled', 'true');
           $('#shootbtn').removeAttr('disabled');
@@ -444,7 +470,6 @@ $(document).ready(function() {
         $('.modal-body').html('<h3>К сожалению, компьютер победил...</h3>');
         $('.modal-header').html('<h3>Миссия провалена!</h3>');
         $('#finish').on('click', function() {
-          e.preventDefault();
           $(location).attr('href', '/');
         });
       }
@@ -452,13 +477,16 @@ $(document).ready(function() {
   }
   const timer = (e) => {
     e.preventDefault();
+
+    $('#targetX').val('');
+    $('#targetY').val('');
     $('#messages').html(`
     <h4>Ход компьютера...</h4>
       <div class="spinner-border text-info" role="status" style="text-align:center;">
         <span class="sr-only">Loading...</span>
       </div>
     `);
-    setTimeout(aiShooting, 2000, /*intForProgressBar*/);
+    setTimeout(aiShooting, 2000);
   }
   $('#aishoot').on('click', timer);
 

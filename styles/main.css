@@ -7,7 +7,6 @@ body{
   margin-top: -5%;
   position: fixed;
   z-index: 100;
-  background-color: #333;
   opacity: 0.9;
   display: flex;
   flex-direction: column;
@@ -17,13 +16,13 @@ body{
 }
 .modal-dialog{
   width: 30% !important;
-  height: 30% !important;
+  height: 35% !important;
   background-color: white !important;
 }
 .modal-content{
   width: 100% !important;
   height: 100% !important;
-  background-color: white !important;
+  opacity: 1 !important;
 }
 .modal-body{
   text-align: center;
@@ -173,4 +172,7 @@ body{
 }
 #next{
   display: none; 
+}
+#nextForm{
+  display: none;
 }

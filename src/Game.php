@@ -68,10 +68,10 @@ class Game
             $aiships[$shipname] = pg_fetch_all($result);
         }
 
-        /*foreach ($battleField as $shipname => $points) {
+        foreach ($battleField as $shipname => $points) {
             $lowershipname = strtolower($shipname);
             pg_query($this->_userconn, "TRUNCATE {$lowershipname}");
-        }*/
+        }
 
         pg_query($this->_aimemory, "TRUNCATE hits");
         pg_query($this->_aimemory, "TRUNCATE misses");
