@@ -179,7 +179,7 @@ class Game
             $aishipsUpdated[$lowershipname] = pg_fetch_all($result);
         }
 
-        $this->_aiships = $aishipsUpdated;
+        //$this->_aiships = $aishipsUpdated;
 
         return [
             'aishipsUpdated' => $aishipsUpdated,
@@ -187,17 +187,58 @@ class Game
             'miss' => $miss,
             'isShipAfloat' => $isShipAfloat,
             'sunkedShip' => $sunkedShip,
-            'isWinner' => $this->isWinner('user')
+            'isWinner' => $this->isWinner('user', $aishipsUpdated)
         ];
     }
 
     public function aiStep()
     {
-        $Ai = new Ai();
+        pg_query(
+            $this->_aimemory,
+            "CREATE TABLE IF NOT EXISTS misses(
+                y integer,
+                x integer
+            );"
+        );
+        pg_query(
+            $this->_aimemory,
+            "CREATE TABLE IF NOT EXISTS hits(
+                y integer,
+                x integer
+            );"
+        );
+        pg_query(
+            $this->_aimemory,
+            "CREATE TABLE IF NOT EXISTS ships(
+                y integer,
+                x integer
+            );"
+        );
+        pg_query(
+            $this->_aimemory,
+            "CREATE TABLE IF NOT EXISTS halo(
+                y integer,
+                x integer
+            );"
+        );
+
+        $res = pg_query($this->_aimemory, "SELECT * FROM hits;");
+        $hits = pg_fetch_all($res);
+
+        $res = pg_query($this->_aimemory, "SELECT * FROM misses;");
+        $misses = pg_fetch_all($res);
+
+        $res = pg_query($this->_aimemory, "SELECT * FROM ships;");
+        $ships = pg_fetch_all($res);
+
+        $res = pg_query($this->_aimemory, "SELECT * FROM halo;");
+        $halo = pg_fetch_all($res);
+
         $emptytablename = '';
         $isShipAfloat = '';
-        //Выбор координат для выстрела
-        $res = $Ai->shoot();
+
+        $Ai = new Ai();
+        $shootingCoordsFromAi = $Ai->shoot($hits, $misses, $ships, $halo);
         
         //выбираем все таблицы из базы с кораблями пользователя
         $result = pg_query(
@@ -218,7 +259,7 @@ class Game
             $responseFromDB = pg_query(
                 $this->_userconn, 
                 "SELECT * FROM {$tableName} 
-                WHERE x = {$res['x']} AND y = {$res['y']};"
+                WHERE x = {$shootingCoordsFromAi['x']} AND y = {$shootingCoordsFromAi['y']};"
             );
             if (pg_fetch_all($responseFromDB)) {
                 $emptytablename = $tableName;
@@ -226,8 +267,8 @@ class Game
                 pg_query(
                     $this->_userconn,
                     "DELETE FROM {$tableName} 
-                    WHERE y = {$res['y']} 
-                    AND x = {$res['x']};"
+                    WHERE y = {$shootingCoordsFromAi['y']} 
+                    AND x = {$shootingCoordsFromAi['x']};"
                 );
                 break;
             };
@@ -239,12 +280,11 @@ class Game
                 "SELECT * FROM {$emptytablename};"
             );
             $isShipAfloat = pg_fetch_all($res);
-            $Ai->takeResponseFromUser($resultOfAiShooting, $isShipAfloat);
+            $this->takeResponseFromUser($resultOfAiShooting, $shootingCoordsFromAi, $isShipAfloat);
         } else {
-            $Ai->takeResponseFromUser($resultOfAiShooting);
+            $this->takeResponseFromUser($resultOfAiShooting, $shootingCoordsFromAi);
         }
         //оновление данных по кораблям пользователя с учетом попаданий
-        $userShipsUpdated = [];
         foreach ($tablesNormalized as $tableName) {
             $lowershipname = strtolower($tableName);
             $temp = pg_query(
@@ -254,34 +294,91 @@ class Game
             $resultingArray[$lowershipname] = pg_fetch_all($temp);
         }
 
-        $this->_userships = $resultingArray;
+        //$this->_userships = $resultingArray;
 
         return [
             'resultArr' => $resultingArray,
             'resOfShooting' => 
-                empty($resultOfAiShooting) ? $res : $resultOfAiShooting,
+                empty($resultOfAiShooting) ? $shootingCoordsFromAi : $resultOfAiShooting,
             'isShipAfloat' => $isShipAfloat,
             'sunkedShip' => $emptytablename,
-            'isWinner' => $this->isWinner('ai')
+            'isWinner' => $this->isWinner('ai', $resultingArray)
         ];
     }
 
-    public function isWinner($player)
+    public function takeResponseFromUser($resOfLastShoot, $lastshoot, $isShipNotSunk = [])
     {
-        $shipsChoice = [
-            'user' => $this->_aiships,
-            'ai' => $this->_userships
-        ];
-        
-        foreach ($shipsChoice[$player] as $ship) {
+        $Ai = new Ai();
+
+        if (empty($resOfLastShoot)) {
+            pg_query(
+                $this->_aimemory,
+                "INSERT INTO misses
+                VALUES({$lastshoot['y']}, {$lastshoot['x']})"
+            );
+        } else {
+            if(!$isShipNotSunk) {
+                pg_query(
+                    $this->_aimemory,
+                    "INSERT INTO hits(y, x) 
+                    VALUES({$resOfLastShoot[0][0]['y']}, {$resOfLastShoot[0][0]['x']})"
+                );
+                $query = pg_query(
+                    $this->_aimemory,
+                    "SELECT * FROM hits;"
+                );
+                $hitsData = pg_fetch_all($query);
+                foreach ($hitsData as $point) {
+                    pg_insert($this->_aimemory, 'ships', $point);
+                }
+                $halo = $Ai->fillHalo($hitsData);
+
+                foreach ($halo as $point) {
+                    pg_insert($this->_aimemory, 'halo', $point);
+                }
+
+                pg_query($this->_aimemory, "TRUNCATE hits;");
+                return;
+            }
+            pg_query(
+                $this->_aimemory,
+                "INSERT INTO hits(y, x) 
+                VALUES({$resOfLastShoot[0][0]['y']}, {$resOfLastShoot[0][0]['x']})"
+            );
+        }
+    }
+
+    public function isWinner($player, $playerShips)
+    {
+        if ($player === 'ai') {
+            $result = pg_query(
+                $this->_aiconn, 
+                "SELECT table_name FROM information_schema.tables 
+                WHERE table_schema = 'public';"
+            );
+            
+            $tables = pg_fetch_all($result);
+
+            $tablesNormalized = [];
+            foreach (array_values($tables) as $value) {
+                $tablesNormalized[] = $value['table_name'];
+            }
+
+            foreach ($tablesNormalized as $tableName) {
+                $lowershipname = strtolower($tableName);
+                $temp = pg_query(
+                    $this->_aiconn,
+                    "SELECT * FROM {$tableName}"
+                );
+                $restOfShips[$lowershipname] = pg_fetch_all($temp);
+            }
+        }
+        foreach ($playerShips as $ship) {
             if ($ship) {
                 return false;
             }
         }
-        foreach ($battleField as $shipname => $points) {
-            $lowershipname = strtolower($shipname);
-            pg_query($this->_userconn, "TRUNCATE {$lowershipname}");
-        }
-        return true;
+        
+        return ['restOfShips' => $restOfShips];
     }
 }

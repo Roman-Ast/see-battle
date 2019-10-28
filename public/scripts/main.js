@@ -45,13 +45,13 @@ $(document).ready(function() {
   const isValidShootingUserCoords = () => {
     const objX = document.querySelector('#targetX');
     const objY = document.querySelector('#targetY');
-    
     const styleX = getComputedStyle(objX);
     const styleY = getComputedStyle(objY);
     const borderX = styleX.getPropertyValue('border-color');
     const borderY = styleY.getPropertyValue('border-color');
     const valueX = objX.value;
     const valueY = objY.value;
+
     return borderX !== 'rgb(255, 0, 0)' && borderY !== 'rgb(255, 0, 0)'
       && valueX !== '' && valueY !== '';
   } ;
@@ -76,8 +76,9 @@ $(document).ready(function() {
     
     if (
       !this.value.length ||
+      this.value === '0' ||
       this.value.length > 2 ||
-      !this.value.match(/^[1-9]+$/) ||
+      !this.value.match(/^[0-9]+$/) ||
       this.value > 10
       ) {
       $('#messages').addClass('alert-warning');
@@ -157,6 +158,7 @@ $(document).ready(function() {
 
     if (
       !this.value.length ||
+      this.value === '0' ||
       this.value.length > 2 ||
       !this.value.match(/^[0-9]+$/) ||
       this.value > 10
@@ -303,13 +305,13 @@ $(document).ready(function() {
       url: '/userShoot'
     }).done(function(response) {
       if (response.repeat) {
-        $('#myModal').fadeIn(500);
+        $('#myModal').fadeIn(200);
         $('.modal-body').html('<h4>Вы уже стреляли в этот квадрат!</h4>');
         $('.modal-header').html('<h3>Предупреждение!</h3>');
         $('#finish').text('close');
         $('#finish').on('click', function(e) {
           e.preventDefault();
-          $('#myModal').fadeOut(500);
+          $('#myModal').fadeOut(200);
         });
         return;
       }
@@ -371,7 +373,7 @@ $(document).ready(function() {
         }
 
         if (response.isWinner) {
-          $('#myModal').fadeIn(500);
+          $('#myModal').fadeIn(200);
           $('body').css({'background': 'rgba(33,33,33,.7)'});
           $('.modal-body').html('<h4>Вы победили!</h4>');
           $('.modal-header').html('<h3>Поздравляем!</h3>');
@@ -384,7 +386,7 @@ $(document).ready(function() {
     });
   });
 
-  const aiShooting = (e, intForProgressBar) => {
+  const aiShooting = () => {
     $('#targetY').val('');
     $('#targetX').val('');
     $('#messages').removeClass('alert-warning');
@@ -396,6 +398,7 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/aishooting'
     }).done(function (response) {
+      console.log(response);
       const letters = {
         '0': 'A', '1': 'B', '2': 'C', '3': 'D', '4': 'E',
         '5': 'F', '6': 'G', '7': 'H', '8': 'I', '9': 'J'
@@ -408,6 +411,18 @@ $(document).ready(function() {
         }
       }
       
+      /*ctxUser.clearRect(0, 0, canvasUser.width, canvasUser.height);
+      points.forEach(function (point, i, arr) {
+        point.forEach(function (ship, i, arr) {
+          ctxUser.fillRect(
+            ship['x'] * shipWidth,
+            ship['y'] * shipHeight,
+            shipWidth,
+            shipHeight
+          );
+        })   
+      });*/
+
       if (response['resOfShooting'].length > 0) {
         $('#userShoot').attr('disabled', 'true');
         $('#messages').removeClass('alert-primary');
@@ -417,9 +432,10 @@ $(document).ready(function() {
           Компьютер нанес удар по координатам 
           ${letters[response['resOfShooting'][0][0]['x']]}
           ${Number(response['resOfShooting'][0][0]['y']) + 1}</p>
-          <h4>Попадание!</h4>
-          <p>...xод компьютера</p>`
+            <h4>Попадание!</h4>
+            <p>...xод компьютера</p>`
           );
+
           if (response['isShipAfloat'] === false) {
             
             const nameOfSunkedShip = $('#typeOfShip')
@@ -437,6 +453,19 @@ $(document).ready(function() {
               <p>Ход компьютера</p>`
               );
           }
+          
+          const img = new Image(30, 30);
+         
+          img.onload = function () {
+            ctxUser.drawImage(
+              img,
+              response['resOfShooting'][0][0]['x'] * shipHeight,
+              response['resOfShooting'][0][0]['y'] * shipWidth,
+              35,
+              35
+            );
+          }
+          img.src = "../public/img/yepp.png";
 
           setTimeout(() => {
             $('#aishoot').click();
@@ -455,28 +484,43 @@ $(document).ready(function() {
           );
           $('#aishoot').attr('disabled', 'true');
           $('#shootbtn').removeAttr('disabled');
-      }
-      
-      ctxUser.clearRect(0, 0, canvasUser.width, canvasUser.height);
-      points.forEach(function (point, i, arr) {
-        point.forEach(function (ship, i, arr) {
-          ctxUser.fillRect(
-            ship['x'] * shipWidth,
-            ship['y'] * shipHeight,
-            shipWidth,
-            shipHeight
-          );
-        })   
-      });
 
+          const img = new Image(30, 30);
+         
+          img.onload = function () {
+            ctxUser.drawImage(
+              img,
+              response['resOfShooting']['x'] * shipHeight,
+              response['resOfShooting']['y'] * shipWidth,
+              35,
+              35
+            );
+          }
+          img.src = "../public/img/dot.png";
+      }
       if (response.isWinner) {
-        console.log(response);
         $('#myModal').slideDown(800);
         $('.modal-body').html('<h3>К сожалению, компьютер победил...</h3>');
         $('.modal-header').html('<h3>Миссия провалена!</h3>');
         $('#finish').on('click', function() {
           $(location).attr('href', '/');
         });
+        
+        const restOfShips = response['isWinner']['restOfShips'];
+        ctxAi.fillStyle = 'red';
+
+        for (const ship in restOfShips) {
+          const shipCoords = restOfShips[ship];
+          for (const point of shipCoords) {
+            ctxAi.fillRect(
+              point['x'] * shipWidth,
+              point['y'] * shipHeight,
+              shipWidth,
+              shipHeight
+            );
+          }
+        }
+
         return;
       }
     });
@@ -550,8 +594,6 @@ $(document).ready(function() {
       data: JSON.stringify(repoOfShips.values()),
       contentType: 'application/json',
       url: '/createUserShips'
-    }).done(function (response) {
-      console.log(response);
-    });
+    }).done(function (response) {});
   });
 });

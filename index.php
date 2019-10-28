@@ -81,7 +81,7 @@ $app->post(
         $userFieldAfterAiShoot = $game->aiStep();
 
         $Encoded = json_encode($userFieldAfterAiShoot);
-        $response->getBody()->write($Encoded);
+        $response->getBody()->write($Encoded); 
 
         return $response
             ->withHeader('Content-Type', 'application/json');

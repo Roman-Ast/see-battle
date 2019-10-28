@@ -6,45 +6,13 @@ use seeBattle\resources\ShipsCreator;
 
 class Ai
 {
-    private $connection;
     private $lastshoot;
     private $hits;
     private $halo;
     private $ships;
     private $misses;
 
-    public function __construct() 
-    {
-        $this->connection = pg_connect("host=localhost dbname=aimemory user=roman password=rimma");
-        pg_query(
-            $this->connection,
-            "CREATE TABLE IF NOT EXISTS misses(
-                y integer,
-                x integer
-            );"
-        );
-        pg_query(
-            $this->connection,
-            "CREATE TABLE IF NOT EXISTS hits(
-                y integer,
-                x integer
-            );"
-        );
-        pg_query(
-            $this->connection,
-            "CREATE TABLE IF NOT EXISTS ships(
-                y integer,
-                x integer
-            );"
-        );
-        pg_query(
-            $this->connection,
-            "CREATE TABLE IF NOT EXISTS halo(
-                y integer,
-                x integer
-            );"
-        );
-    }
+    public function __construct() {}
 
     public function createShips()
     {
@@ -94,19 +62,12 @@ class Ai
         }
         return $result;
     }
-    public function shoot()
+    public function shoot($hitsArr, $missesArr, $shipsArr, $haloArr)
     {
-        $res = pg_query($this->connection, "SELECT * FROM hits;");
-        $hits = $this->strToInt(pg_fetch_all($res));
-
-        $res = pg_query($this->connection, "SELECT * FROM misses;");
-        $misses = $this->strToInt(pg_fetch_all($res));
-
-        $res = pg_query($this->connection, "SELECT * FROM ships;");
-        $ships = $this->strToInt(pg_fetch_all($res));
-
-        $res = pg_query($this->connection, "SELECT * FROM halo;");
-        $halo = $this->strToInt(pg_fetch_all($res));
+        $hits = $this->strToInt($hitsArr);
+        $misses = $this->strToInt($missesArr);
+        $ships = $this->strToInt($shipsArr);
+        $halo = $this->strToInt($haloArr);
 
         $X = '';
         $Y = '';
@@ -146,7 +107,7 @@ class Ai
                             $this->lastshoot = ['y' => $Y, 'x' => $X];
                             return $this->lastshoot;
                         }
-                        return $this->shoot();
+                        return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
                     if ($hits[count($hits) - 1]['x'] === 9) {
                         $X = $hits[0]['x'] - 1;
@@ -155,7 +116,7 @@ class Ai
                             $this->lastshoot = ['y' => $Y, 'x' => $X];
                             return $this->lastshoot;
                         }
-                        return $this->shoot();
+                        return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
                     $X = $this->randomFirstOrLast($hits, 'x');
                     $Y = $hits[0]['y'];
@@ -163,7 +124,7 @@ class Ai
                         $this->lastshoot = ['y' => $Y, 'x' => $X];
                         return $this->lastshoot;
                     }
-                    return $this->shoot();
+                    return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                 } else if ($vertical) {
                     if ($hits[0]['y'] === 0) {
                         $Y = $hits[count($hits) - 1]['y'] + 1;
@@ -172,7 +133,7 @@ class Ai
                             $this->lastshoot = ['y' => $Y, 'x' => $X];
                             return $this->lastshoot;
                         }
-                        return $this->shoot();
+                        return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
                     if ($hits[count($hits) - 1]['x'] === 9) {
                         $Y = $hits[0]['y'] - 1;
@@ -181,7 +142,7 @@ class Ai
                             $this->lastshoot = ['y' => $Y, 'x' => $X];
                             return $this->lastshoot;
                         }
-                        return $this->shoot();
+                        return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
                     $Y = $this->randomFirstOrLast($hits, 'y');
                     $X = $hits[0]['x'];
@@ -189,7 +150,7 @@ class Ai
                         $this->lastshoot = ['y' => $Y, 'x' => $X];
                         return $this->lastshoot;
                     }
-                    return $this->shoot();
+                    return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                 }
             } else {
                 $direction = $this->randomDirection();
@@ -201,7 +162,7 @@ class Ai
                             $this->lastshoot = ['y' => $Y, 'x' => $X];
                             return $this->lastshoot;
                         }
-                        return $this->shoot();
+                        return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
                     if ($hits[0]['x'] === 9) {
                         $X = 8;
@@ -210,7 +171,7 @@ class Ai
                             $this->lastshoot = ['y' => $Y, 'x' => $X];
                             return $this->lastshoot;
                         }
-                        return $this->shoot();
+                        return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     };
                     $X = $this->randomSign($hits[0]['x']);
                     $Y = $hits[0]['y'];
@@ -218,7 +179,7 @@ class Ai
                         $this->lastshoot = ['y' => $Y, 'x' => $X];
                         return $this->lastshoot;
                     }
-                    return $this->shoot();
+                    return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                 } else if ($direction === 'vertical') {
                     if ($hits[0]['y'] === 0) {
                         $Y = 1;
@@ -227,7 +188,7 @@ class Ai
                             $this->lastshoot = ['y' => $Y, 'x' => $X];
                             return $this->lastshoot;
                         }
-                        return $this->shoot();
+                        return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
                     if ($hits[0]['y'] === 9) {
                         $Y = 8;
@@ -236,7 +197,7 @@ class Ai
                             $this->lastshoot = ['y' => $Y, 'x' => $X];
                             return $this->lastshoot;
                         }
-                        return $this->shoot();
+                        return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
                     $Y = $this->randomSign($hits[0]['y']);
                     $X = $hits[0]['x'];
@@ -244,7 +205,7 @@ class Ai
                         $this->lastshoot = ['y' => $Y, 'x' => $X];
                         return $this->lastshoot;
                     }
-                    return $this->shoot();
+                    return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                 }
             }
         } else {
@@ -253,43 +214,10 @@ class Ai
             if ($this->checkInAiMemory($this->lastshoot, $halo, $ships, $misses, $hits)) {
                 return $this->lastshoot;
             }
-            return $this->shoot();
+            return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
         }
     }
-    public function takeResponseFromUser($resOfLastShoot, $isShipNotSunk = [])
-    {
-        if (empty($resOfLastShoot)) {
-            pg_query(
-                $this->connection,
-                "INSERT INTO misses
-                VALUES({$this->lastshoot['y']}, {$this->lastshoot['x']})"
-            );
-        } else {
-            if(!$isShipNotSunk) {
-                pg_query(
-                    $this->connection,
-                    "INSERT INTO hits(y, x) 
-                    VALUES({$resOfLastShoot[0][0]['y']}, {$resOfLastShoot[0][0]['x']})"
-                );
-                $query = pg_query(
-                    $this->connection,
-                    "SELECT * FROM hits;"
-                );
-                $hitsData = pg_fetch_all($query);
-                foreach ($hitsData as $point) {
-                    pg_insert($this->connection, 'ships', $point);
-                }
-                $this->fillHalo($hitsData);
-                pg_query($this->connection, "TRUNCATE hits;");
-                return;
-            }
-            pg_query(
-                $this->connection,
-                "INSERT INTO hits(y, x) 
-                VALUES({$resOfLastShoot[0][0]['y']}, {$resOfLastShoot[0][0]['x']})"
-            );
-        }
-    }
+
     public function fillHalo($hitsData)
     {
         $halo = $this->halo ?? [];
@@ -310,8 +238,7 @@ class Ai
         array_push($halo, [ 'y' => $coordsLastPoint['y'], 'x' => $coordsLastPoint['x'] + 1, ]);
         array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] + 1, ]);
         $this->halo = array_slice($halo, 0);
-        foreach ($halo as $point) {
-            pg_insert($this->connection, 'halo', $point);
-        }
+        
+        return $halo;
     }
 }
