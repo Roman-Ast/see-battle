@@ -4,9 +4,6 @@ use DI\Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
-use seeBattle\entities\Field;
-use seeBattle\user_entities\User_Field;
-use seeBattle\user_entities\Validator;
 use seeBattle\entities\Ai;
 use seeBattle\src\Game;
 

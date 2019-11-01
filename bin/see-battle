@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+
+BASEDIR=`dirname $0`
+
+cd "$BASEDIR/../"
+
+gnome-open http://localhost:9254
+php -S localhost:9254

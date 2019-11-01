@@ -15,18 +15,8 @@ class ShipTest extends TestCase
 {
     public function testOneDeck()
     {
-        $field = new Field();
         $one_deck_ship = new One_deck();
-        $createdShip = $one_deck_ship->createOneDeckShip();
-        $expected = [
-            'decks' => 1,
-            'width' => $field::WIDTH/10,
-            'height' => $field::HEIGHT/10
-        ];
         $this->assertEquals(1, $one_deck_ship->getCountOfDeck());
-        $this->assertEquals($field::WIDTH/10, $one_deck_ship->getWidth());
-        $this->assertEquals($field::HEIGHT/10, $one_deck_ship->getHeight());
-        $this->assertEquals($expected, $createdShip);
     }
 
     public function testTwoDeckShip()

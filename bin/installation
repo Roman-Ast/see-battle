@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+
+
+BASEDIR=`dirname $0`
+PROJECT_PATH=`cd $BASEDIR; pwd`
+
+PATH_MAIN=`cd $PROJECT_PATH/../; pwd`
+PATH_FOR_ADD='export PATH='$PATH_MAIN"/bin/"":"'$PATH'
+
+chmod u+x "$PATH_MAIN/bin/see-battle"
+sudo sh -c "echo $PATH_FOR_ADD >> ~/.bashrc"
