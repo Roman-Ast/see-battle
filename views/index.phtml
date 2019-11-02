@@ -23,6 +23,7 @@
         </div>
       </div>
     </div>
+    <div id="container">
     <div id="wrapper">
       <div id="canvasAiWrapper">
         <canvas id="canvasAI" width="400" height="400"></canvas>
@@ -244,12 +245,30 @@
           </form>
         </div>
         <form>
-          <input type="submit" disabled="disabled" value="Отправить корабли" id="sendShips" class="btn btn-success">
+          <input type="submit" disabled="disabled" value="Начать бой" id="sendShips" class="btn btn-success">
         </form>
       </div>
     </div>
-    <form action="createUserShips" method="POST">
-      <input type="submit" value="fill" id="fillTheUserField">
-    </form>
+      <div id="state">
+        <div class="state_container ai_state">
+        <div class="hoist ai_hoiste">dsdsad</div>
+          Осталось кораблей:
+        </div>
+        <div class="state_container user_state">
+          <div class="hoist user_hoist">
+            <ul>
+              <?php foreach ($aiships as $shipName => $coords):?>
+                <li><?= $shipName ?></li>
+              <?php endforeach; ?>
+            </ul>
+          </div>
+          Осталось кораблей:
+        </div>
+        <div class="state_container empty"></div>
+      </div>
+      <form action="createUserShips" method="POST">
+        <input type="submit" value="fill" id="fillTheUserField">
+      </form>
+    </div>
   </body>
 </html>

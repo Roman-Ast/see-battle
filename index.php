@@ -31,9 +31,10 @@ $app->get(
 
         $Encoded = json_encode($aiField);
 
-        $response->getBody()->write($Encoded);
+        return $this->get('renderer')->render($response, 'index.phtml', ['aiships' => $aiField['aiships']]);
+        /*$response->getBody()->write($Encoded);
         return $response
-                ->withHeader('Content-Type', 'application/json');
+                ->withHeader('Content-Type', 'application/json');*/
     }
 );
 

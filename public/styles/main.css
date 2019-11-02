@@ -1,6 +1,34 @@
 body{
   background-image: url('../img/ripples.png') !important;
 }
+#container{
+  width: 95%;
+  margin: 20px auto;
+}
+#wrapper {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+.state_container{
+  margin-top: 1%;
+  width: calc(100% / 3.33);
+  border: 1px solid red;
+  position: relative;
+}
+#state{
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  
+}
+.hoist{
+  width: 100%;
+  border: 1px solid #bbb;
+  position: absolute;
+}
 #myModal{
   width: 100%;
   height: 100vh;
@@ -42,13 +70,6 @@ body{
   align-items: flex-end;
   width: 430px;
   height: 430px;
-}
-#wrapper {  
-  width: 95%;
-  margin: 5% auto;
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: space-between;
 }
 #canvasAI {
   border: 1px solid #333;

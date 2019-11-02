@@ -61,7 +61,8 @@ $(document).ready(function() {
     data: JSON.stringify(canvasAI.width),
     contentType: 'application/json',
     url: '/getAiShips'
-  }).done();
+  }).done(response => {
+  });
   
   $('#typeOfShip').on('change', function() {
     const shipType = $(this)
@@ -241,6 +242,7 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/createUserShips'
     }).done(function(response) {
+      //console.log(response);
       const rawShipsWithErrors = [];
 
       if (response.error) {
@@ -304,6 +306,7 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/userShoot'
     }).done(function(response) {
+      //console.log(response);
       if (response.repeat) {
         $('#myModal').fadeIn(200);
         $('.modal-body').html('<h4>Вы уже стреляли в этот квадрат!</h4>');
@@ -398,7 +401,10 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/aishooting'
     }).done(function (response) {
-      console.log(response);
+      //console.log(response);
+      const shipsAfloat = Object.values(response['resultArr']).filter(el => el);
+      $('.user_state').html(`Осталось кораблей:${shipsAfloat.length}`);
+
       const letters = {
         '0': 'A', '1': 'B', '2': 'C', '3': 'D', '4': 'E',
         '5': 'F', '6': 'G', '7': 'H', '8': 'I', '9': 'J'

@@ -350,6 +350,8 @@ class Game
 
     public function isWinner($player, $playerShips)
     {
+        $restOfShips = [];
+
         if ($player === 'ai') {
             $result = pg_query(
                 $this->_aiconn, 
@@ -378,7 +380,7 @@ class Game
                 return false;
             }
         }
-        
+
         return ['restOfShips' => $restOfShips];
     }
 }
