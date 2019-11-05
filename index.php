@@ -21,20 +21,38 @@ $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, true);
 
 $app->get('/', function ($request, $response) {
-    return $this->get('renderer')->render($response, 'index.phtml');
+    return $this->get('renderer')->render($response, 'greet.phtml', ['aiships' => ['hello' => []]]);
 });
 
 $app->get(
-    '/getAiShips', function ($request, $response) {
+    '/startGame', function ($request, $response) {
         $game = new Game();
         $aiField = $game->getAiField();
+        $aiships = $aiField['aiships'];
 
-        $Encoded = json_encode($aiField);
+        $aishipsOnRussian = [
+            'fourdeck' => 'Четырехпалубный',
+            'threedeck1' => 'Трехпалубный1',
+            'threedeck2' => 'Трехпалубный2',
+            'twodeck1' => 'Двухпалубный1',
+            'twodeck2' => 'Двухпалубный2',
+            'twodeck3' => 'Двухпалубный3',
+            'onedeck1' => 'Однопалубный1',
+            'onedeck2' => 'Однопалубный2',
+            'onedeck3' => 'Однопалубный3',
+            'onedeck4' => 'Однопалубный4'
 
-        return $this->get('renderer')->render($response, 'index.phtml', ['aiships' => $aiField['aiships']]);
-        /*$response->getBody()->write($Encoded);
-        return $response
-                ->withHeader('Content-Type', 'application/json');*/
+        ];
+
+        $aishipsNormalizedForUser = [];
+        foreach ($aiField['aiships'] as $name => $coords) {
+            $aishipsNormalizedForUser[] = $aishipsOnRussian[$name];
+        }
+        return $this->get('renderer')->render(
+            $response,
+            'index.phtml', 
+            ['aiships' => $aishipsNormalizedForUser]
+        );
     }
 );
 

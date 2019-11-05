@@ -38,15 +38,15 @@
           <select id="typeOfShip" class="form-control">
             <option selected>Выберите тип корабля</option>
             <option name="fourdeck">Четырехпалубный</option>
-            <option name="threedeck1">Трехпалубный 1</option>
-            <option name="threedeck2">Трехпалубный 2</option>
-            <option name="twodeck1">Двухпалубный 1</option>
-            <option name="twodeck2">Двухпалубный 2</option>
-            <option name="twodeck3">Двухпалубный 3</option>
-            <option name="onedeck1">Однопалубный 1</option>
-            <option name="onedeck2">Однопалубный 2</option>
-            <option name="onedeck3">Однопалубный 3</option>
-            <option name="onedeck4">Однопалубный 4</option>
+            <option name="threedeck1">Трехпалубный1</option>
+            <option name="threedeck2">Трехпалубный2</option>
+            <option name="twodeck1">Двухпалубный1</option>
+            <option name="twodeck2">Двухпалубный2</option>
+            <option name="twodeck3">Двухпалубный3</option>
+            <option name="onedeck1">Однопалубный1</option>
+            <option name="onedeck2">Однопалубный2</option>
+            <option name="onedeck3">Однопалубный3</option>
+            <option name="onedeck4">Однопалубный4</option>
           </select>
           <div id="fourdeck" class="coords">
             <div class="pointsHeader">
@@ -245,30 +245,46 @@
           </form>
         </div>
         <form>
-          <input type="submit" disabled="disabled" value="Начать бой" id="sendShips" class="btn btn-success">
+          <input type="submit" disabled="disabled" value="Начать бой" id="sendShips" class="btn btn-primary">
         </form>
       </div>
     </div>
       <div id="state">
         <div class="state_container ai_state">
-        <div class="hoist ai_hoiste">dsdsad</div>
-          Осталось кораблей:
+          <div id="ai_hoist" class="hoist card bg-light mb-3" style="max-width: 18rem;">
+            <div class="card-body">
+              <h5 class="card-title">Список кораблей</h5>
+              <ol class="card-text ai_ships_left" >
+                <?php if ($aiships): ?>
+                  <?php foreach ($aiships as $key => $shipName): ?>
+                    <li><?= $shipName ?></li>
+                  <?php endforeach; ?>
+                <?php endif;?>
+              </ol>
+            </div>
+          </div>
+          <div class="ai_state_pointer pointer">Осталось кораблей: 10</div>
         </div>
         <div class="state_container user_state">
-          <div class="hoist user_hoist">
-            <ul>
-              <?php foreach ($aiships as $shipName => $coords):?>
-                <li><?= $shipName ?></li>
-              <?php endforeach; ?>
-            </ul>
+          <div id="user_hoist" class="hoist card bg-light mb-3" style="max-width: 18rem;">
+            <div class="card-body">
+              <h5 class="card-title">Список кораблей</h5>
+              <ol class="card-text user_ships_left" >
+                <?php if ($aiships): ?>
+                  <?php foreach ($aiships as $key => $shipName): ?>
+                    <li><?= $shipName ?></li>
+                  <?php endforeach; ?>
+                <?php endif;?>
+              </ol>
+            </div>
           </div>
-          Осталось кораблей:
+          <div class="user_state_pointer pointer">Осталось кораблей: 0</div>
         </div>
         <div class="state_container empty"></div>
       </div>
-      <form action="createUserShips" method="POST">
+      <!--<form action="createUserShips" method="POST">
         <input type="submit" value="fill" id="fillTheUserField">
-      </form>
+      </form>-->
     </div>
   </body>
 </html>

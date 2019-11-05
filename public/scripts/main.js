@@ -10,7 +10,7 @@ $(document).ready(function() {
 
   $('#userShoot').attr('disabled', 'true');
   $('.postShip').attr('disabled', 'true');
-  $('#sendShips').removeAttr('disabled');
+  //$('#sendShips').removeAttr('disabled');
   $('#messages').addClass('alert-primary');
   $('#messages').html(
     `<h4>Добро пожаловать, боец!</h4>
@@ -20,7 +20,7 @@ $(document).ready(function() {
     <h5>Желаем удачи!</h5>`
     );
 
-
+  
   const isUserSpecifiesCoordsValid = (shipType) => {
     const children = $(`#${shipType}`).children();
     const arrValue = [];
@@ -56,11 +56,19 @@ $(document).ready(function() {
       && valueX !== '' && valueY !== '';
   } ;
 
+  $('.pointer').on('mouseover', function () {
+    $(this).parent().children().first().css({'display': 'flex'});
+  });
+
+  $('.pointer').on('mouseout', function () {
+    $(this).parent().children().first().css({'display': 'none'});
+  }); 
+
   $.ajax({
     type: 'GET',
     data: JSON.stringify(canvasAI.width),
     contentType: 'application/json',
-    url: '/getAiShips'
+    url: '/startGame'
   }).done(response => {
   });
   
@@ -224,7 +232,7 @@ $(document).ready(function() {
       }
     }
     
-    (repoOfShips.size >= 0) ? $('#sendShips').removeAttr('disabled'): null;
+    (repoOfShips.size >= 10) ? $('#sendShips').removeAttr('disabled'): null;
   });
 
   $('#sendShips').on('click', function(e) {
@@ -285,6 +293,10 @@ $(document).ready(function() {
         $('#sendShips').css({'display': 'none'});
         $('#Userform').css({'display': 'none'});
         $('#shoot').css({'display': 'flex'});
+          
+        $('.user_state_pointer').html(
+          `Осталось кораблей:  ${Object.values(response).length}`
+        );
       }
     });
   });
@@ -306,7 +318,7 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/userShoot'
     }).done(function(response) {
-      //console.log(response);
+      console.log(response);
       if (response.repeat) {
         $('#myModal').fadeIn(200);
         $('.modal-body').html('<h4>Вы уже стреляли в этот квадрат!</h4>');
@@ -373,6 +385,14 @@ $(document).ready(function() {
             <h4>Потоплен корабль ${nameOfSunkedShip}!</h4>
             <p>Ваш ход!</p>`
           );
+          $(`ol.ai_ships_left>li:contains("${nameOfSunkedShip}"):not(:has(*))`)
+            .css('text-decoration', 'line-through');
+
+          leftShips = Object.values(response['aishipsUpdated']).filter(el => el);
+          
+          $('.ai_state_pointer').html(
+            `Осталось кораблей:  ${leftShips.length}`
+          );
         }
 
         if (response.isWinner) {
@@ -401,9 +421,7 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/aishooting'
     }).done(function (response) {
-      //console.log(response);
-      const shipsAfloat = Object.values(response['resultArr']).filter(el => el);
-      $('.user_state').html(`Осталось кораблей:${shipsAfloat.length}`);
+      console.log(response);
 
       const letters = {
         '0': 'A', '1': 'B', '2': 'C', '3': 'D', '4': 'E',
@@ -457,6 +475,15 @@ $(document).ready(function() {
               ${Number(response['resOfShooting'][0][0]['y']) + 1}</p>
               <h5>Потоплен корабль ${nameOfSunkedShip}!</h5>
               <p>Ход компьютера</p>`
+              );
+
+              $(`ol.user_ships_left>li:contains("${nameOfSunkedShip}"):not(:has(*))`)
+                .css('text-decoration', 'line-through');
+
+              leftShips = Object.values(response['resultArr']).filter(el => el);
+
+              $('.user_state_pointer').html(
+                `Осталось кораблей:  ${leftShips.length}`
               );
           }
           
@@ -526,8 +553,6 @@ $(document).ready(function() {
             );
           }
         }
-
-        return;
       }
     });
   }

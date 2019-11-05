@@ -1,20 +1,30 @@
-body{
-  background-image: url('../img/ripples.png') !important;
+#greet_container{
+  background:url('http://www.rabstol.net/uploads/gallery/main/601/rabstol_net_world_of_warships_11.jpg');
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+#main{
+  width: 15%;
+}
+.go{
+  width: 100%;
 }
 #container{
-  width: 95%;
-  margin: 20px auto;
+  background-image: url('../img/ripples.png') !important;
+  width: 100%;
+  padding: 3% 2% 0 2%;
+  height: 100vh;
+  margin: 0px auto;
 }
 #wrapper {
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
-}
-.state_container{
-  margin-top: 1%;
-  width: calc(100% / 3.33);
-  border: 1px solid red;
-  position: relative;
 }
 #state{
   width: 100%;
@@ -22,12 +32,29 @@ body{
   flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-  
+}
+.state_container{
+  margin-top: 1%;
+  width: calc(100% / 3.33);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 .hoist{
   width: 100%;
-  border: 1px solid #bbb;
-  position: absolute;
+  position: absolute !important;
+  bottom: 0 !important;
+}
+#user_hoist{
+  display: none;
+}
+#ai_hoist{
+  display: none;
+}
+.cursor{
+  width: 50px;
+  height: 50px;
 }
 #myModal{
   width: 100%;
@@ -164,11 +191,13 @@ body{
 .postShip{
   font-size: 0.9rem;
   left: calc(100% / 3);
+  width: 33%;
 }
 #sendShips {
+  width: 33%;
   position: absolute;
   bottom: 0;
-  left: calc(100% / 3.5);
+  left: calc(100% / 3);
 }
 #Userform {
   width: 100%;
