@@ -179,8 +179,6 @@ class Game
             $aishipsUpdated[$lowershipname] = pg_fetch_all($result);
         }
 
-        //$this->_aiships = $aishipsUpdated;
-
         return [
             'aishipsUpdated' => $aishipsUpdated,
             'deletedItem' => $deletedItem,

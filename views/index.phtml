@@ -13,7 +13,7 @@
   </head>
   <body>
     <div id="myModal">
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header"></div>
           <div class="modal-body"></div>
@@ -254,37 +254,43 @@
           <div id="ai_hoist" class="hoist card bg-light mb-3" style="max-width: 18rem;">
             <div class="card-body">
               <h5 class="card-title">Список кораблей</h5>
-              <ol class="card-text ai_ships_left" >
+              <ul class="card-text ai_ships_left" >
                 <?php if ($aiships): ?>
                   <?php foreach ($aiships as $key => $shipName): ?>
                     <li><?= $shipName ?></li>
                   <?php endforeach; ?>
                 <?php endif;?>
-              </ol>
+              </ul>
             </div>
           </div>
           <div class="ai_state_pointer pointer">Осталось кораблей: 10</div>
+          <button class="btn btn-link ai_list_show"><img src="../public/img/arrowUp.png"></button>
         </div>
         <div class="state_container user_state">
           <div id="user_hoist" class="hoist card bg-light mb-3" style="max-width: 18rem;">
             <div class="card-body">
               <h5 class="card-title">Список кораблей</h5>
-              <ol class="card-text user_ships_left" >
+              <ul class="card-text user_ships_left" >
                 <?php if ($aiships): ?>
                   <?php foreach ($aiships as $key => $shipName): ?>
                     <li><?= $shipName ?></li>
                   <?php endforeach; ?>
                 <?php endif;?>
-              </ol>
+              </ul>
             </div>
           </div>
           <div class="user_state_pointer pointer">Осталось кораблей: 0</div>
+          <button class="btn btn-link user_list_show"><img src="../public/img/arrowUp.png"></button>
         </div>
-        <div class="state_container empty"></div>
+        <div class="state_container steps">
+          <div class="user_step">Пользователь: 0</div>
+          <div>Ходы</div>
+          <div class="ai_step">Компьютер: 0</div>
+        </div>
       </div>
-      <!--<form action="createUserShips" method="POST">
+      <form action="createUserShips" method="POST">
         <input type="submit" value="fill" id="fillTheUserField">
-      </form>-->
+      </form>
     </div>
   </body>
 </html>

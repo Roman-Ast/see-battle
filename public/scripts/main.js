@@ -8,9 +8,13 @@ $(document).ready(function() {
   const shipHeight = canvasAIWidth / 10;
   const repoOfShips = new Map();
 
+  const count = (n) => n + 1; 
+  let counterForUser = count(0);
+  let counterForAi = count(0);
+  
   $('#userShoot').attr('disabled', 'true');
   $('.postShip').attr('disabled', 'true');
-  //$('#sendShips').removeAttr('disabled');
+  $('#sendShips').removeAttr('disabled');
   $('#messages').addClass('alert-primary');
   $('#messages').html(
     `<h4>Добро пожаловать, боец!</h4>
@@ -56,13 +60,12 @@ $(document).ready(function() {
       && valueX !== '' && valueY !== '';
   } ;
 
-  $('.pointer').on('mouseover', function () {
-    $(this).parent().children().first().css({'display': 'flex'});
-  });
-
-  $('.pointer').on('mouseout', function () {
-    $(this).parent().children().first().css({'display': 'none'});
-  }); 
+  $('.ai_list_show').on('click', function () {
+    $('#ai_hoist').slideToggle();
+  })
+  $('.user_list_show').on('click', function () {
+    $('#user_hoist').slideToggle();
+  })
 
   $.ajax({
     type: 'GET',
@@ -232,7 +235,7 @@ $(document).ready(function() {
       }
     }
     
-    (repoOfShips.size >= 10) ? $('#sendShips').removeAttr('disabled'): null;
+    (repoOfShips.size >= 0) ? $('#sendShips').removeAttr('disabled'): null;
   });
 
   $('#sendShips').on('click', function(e) {
@@ -304,6 +307,9 @@ $(document).ready(function() {
   $('#userShoot').on('click', function(e) {
     e.preventDefault();
 
+    $('.user_step').html(`Игрок: ${counterForUser}`);
+    counterForUser += 1;
+
     const letters = {
       'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4,
       'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9
@@ -318,7 +324,7 @@ $(document).ready(function() {
       contentType: 'application/json',
       url: '/userShoot'
     }).done(function(response) {
-      console.log(response);
+      //console.log(response);
       if (response.repeat) {
         $('#myModal').fadeIn(200);
         $('.modal-body').html('<h4>Вы уже стреляли в этот квадрат!</h4>');
@@ -385,7 +391,7 @@ $(document).ready(function() {
             <h4>Потоплен корабль ${nameOfSunkedShip}!</h4>
             <p>Ваш ход!</p>`
           );
-          $(`ol.ai_ships_left>li:contains("${nameOfSunkedShip}"):not(:has(*))`)
+          $(`ul.ai_ships_left>li:contains("${nameOfSunkedShip}"):not(:has(*))`)
             .css('text-decoration', 'line-through');
 
           leftShips = Object.values(response['aishipsUpdated']).filter(el => el);
@@ -410,6 +416,9 @@ $(document).ready(function() {
   });
 
   const aiShooting = () => {
+    $('.ai_step').html(`Компьютер: ${counterForAi}`);
+    counterForAi += 1;
+
     $('#targetY').val('');
     $('#targetX').val('');
     $('#messages').removeClass('alert-warning');
@@ -477,7 +486,7 @@ $(document).ready(function() {
               <p>Ход компьютера</p>`
               );
 
-              $(`ol.user_ships_left>li:contains("${nameOfSunkedShip}"):not(:has(*))`)
+              $(`ul.user_ships_left>li:contains("${nameOfSunkedShip}"):not(:has(*))`)
                 .css('text-decoration', 'line-through');
 
               leftShips = Object.values(response['resultArr']).filter(el => el);

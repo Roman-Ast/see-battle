@@ -99,6 +99,7 @@ class Ai
                 $vertical = \collect($arrX)->every(function($val) use($firstX){
                     return $val === $firstX;
                 });
+
                 if ($horizontal) {
                     if ($hits[0]['x'] === 0) {
                         $X = $hits[count($hits) - 1]['x'] + 1;
@@ -221,24 +222,85 @@ class Ai
     public function fillHalo($hitsData)
     {
         $halo = $this->halo ?? [];
-        for ($i = 0; $i < count($hitsData); $i++) { 
-            array_push($halo, [ 'y' => $hitsData[$i]['y'] - 1, 'x' => $hitsData[$i]['x'] ]);  
-        }
-        for ($i = 0; $i < count($hitsData); $i++) { 
-            array_push($halo, [ 'y' => $hitsData[$i]['y'] + 1, 'x' => $hitsData[$i]['x'] ]);  
-        }
 
-        $coordsFirstPoint = $hitsData[0];
-        array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'] - 1 ]);
-        array_push($halo, [ 'y' => $coordsFirstPoint['y'], 'x' => $coordsFirstPoint['x'] - 1, ]);
-        array_push($halo, [ 'y' => $coordsFirstPoint['y'] + 1, 'x' => $coordsFirstPoint['x'] - 1, ]);
-
-        $coordsLastPoint = $hitsData[count($hitsData) - 1];
-        array_push($halo, [ 'y' => $coordsLastPoint['y'] - 1, 'x' => $coordsLastPoint['x'] + 1, ]);
-        array_push($halo, [ 'y' => $coordsLastPoint['y'], 'x' => $coordsLastPoint['x'] + 1, ]);
-        array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] + 1, ]);
-        $this->halo = array_slice($halo, 0);
+        $firstY = $hitsData[0]['y'];
+        $horizontal = \collect($hitsData)->every(function($val) use($firstY){
+            return $val['y'] === $firstY;
+        });
         
-        return $halo;
+        $coordsFirstPoint = false;
+        $coordsLastPoint = false;
+
+        if ($horizontal) {
+            $coordsFirstPoint = array_reduce($hitsData, function($acc, $innerArray) {
+                if ($innerArray['x'] < $acc['x']) {
+                    $acc = $innerArray;
+                    return $acc;
+                }
+                return $acc;
+            }, ['y' => INF, 'x' => INF]);
+
+            $coordsLastPoint = array_reduce($hitsData, function($acc, $innerArray) {
+                if ($innerArray['x'] > $acc['x']) {
+                    $acc = $innerArray;
+                    return $acc;
+                }
+                return $acc;
+            }, ['y' => -INF, 'x' => -INF]);
+
+            for ($i = 0; $i < count($hitsData); $i++) { 
+                array_push($halo, [ 'y' => $hitsData[$i]['y'] - 1, 'x' => $hitsData[$i]['x'] ]);  
+            }
+            for ($i = 0; $i < count($hitsData); $i++) { 
+                array_push($halo, [ 'y' => $hitsData[$i]['y'] + 1, 'x' => $hitsData[$i]['x'] ]);  
+            }
+
+            array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'] - 1 ]);
+            array_push($halo, [ 'y' => $coordsFirstPoint['y'], 'x' => $coordsFirstPoint['x'] - 1, ]);
+            array_push($halo, [ 'y' => $coordsFirstPoint['y'] + 1, 'x' => $coordsFirstPoint['x'] - 1, ]);
+
+            
+            array_push($halo, [ 'y' => $coordsLastPoint['y'] - 1, 'x' => $coordsLastPoint['x'] + 1, ]);
+            array_push($halo, [ 'y' => $coordsLastPoint['y'], 'x' => $coordsLastPoint['x'] + 1, ]);
+            array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] + 1, ]);
+            
+            $this->halo = array_slice($halo, 0);
+            return $halo;
+        } else {
+            $coordsFirstPoint = array_reduce($hitsData, function($acc, $innerArray) {
+                if ($innerArray['y'] < $acc['y']) {
+                    $acc = $innerArray;
+                    return $acc;
+                }
+                return $acc;
+            }, ['y' => INF, 'x' => INF]);
+
+            $coordsLastPoint = array_reduce($hitsData, function($acc, $innerArray) {
+                if ($innerArray['y'] > $acc['y']) {
+                    $acc = $innerArray;
+                    return $acc;
+                }
+                return $acc;
+            }, ['y' => -INF, 'x' => -INF]);
+
+            for ($i = 0; $i < count($hitsData); $i++) { 
+                array_push($halo, [ 'y' => $hitsData[$i]['y'], 'x' => $hitsData[$i]['x'] + 1 ]);  
+            }
+            for ($i = 0; $i < count($hitsData); $i++) { 
+                array_push($halo, [ 'y' => $hitsData[$i]['y'], 'x' => $hitsData[$i]['x'] - 1 ]);  
+            }
+
+            array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'] - 1 ]);
+            array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'], ]);
+            array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'] + 1, ]);
+
+            
+            array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] - 1, ]);
+            array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'], ]);
+            array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] + 1, ]);
+
+            $this->halo = array_slice($halo, 0);
+            return $halo;
+        }
     }
 }
