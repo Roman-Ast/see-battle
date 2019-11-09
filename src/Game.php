@@ -107,14 +107,7 @@ class Game
                 pg_insert($this->_userconn, strtolower($shipname), $point);
             }
         }
-
-        $userShips = [];
-        foreach ($shipCoords as $shipname => $points) {
-            $lowershipname = strtolower($shipname);
-            $result = pg_query($this->_userconn, "SELECT * FROM {$lowershipname}");
-            $userShips[$shipname] = pg_fetch_all($result);
-        }
-        return $userShips;
+        return $shipCoords;
     }
 
     public function userStep($targetCoords)

@@ -48,27 +48,9 @@ class Ai
         }
         return true;
     }
-    private function strToInt(...$array)
-    {
-        $arrFiltered = array_filter($array);
-        if (empty($arrFiltered)) return false;
-        $result = [];
-        foreach ($array as $key => $innerArray) {
-            $result[$key] = [];
-            foreach ($innerArray as $key => $point) {
-                $result[$key] = ['y' => (int)$point['y'], 'x' => (int)$point['x']];
-            }
-            $result[$key] = [ 'y' => (integer) $point['y'], 'x' => (integer) $point['x'] ];
-        }
-        return $result;
-    }
-    public function shoot($hitsArr, $missesArr, $shipsArr, $haloArr)
-    {
-        $hits = $this->strToInt($hitsArr);
-        $misses = $this->strToInt($missesArr);
-        $ships = $this->strToInt($shipsArr);
-        $halo = $this->strToInt($haloArr);
 
+    public function shoot($hits, $misses, $ships, $halo)
+    {
         $X = '';
         $Y = '';
 
@@ -101,7 +83,7 @@ class Ai
                 });
 
                 if ($horizontal) {
-                    if ($hits[0]['x'] === 0) {
+                    if ($hits[0]['x'] == 0) {
                         $X = $hits[count($hits) - 1]['x'] + 1;
                         $Y = $hits[0]['y'];
                         if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses)) {
@@ -110,7 +92,7 @@ class Ai
                         }
                         return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
-                    if ($hits[count($hits) - 1]['x'] === 9) {
+                    if ($hits[count($hits) - 1]['x'] == 9) {
                         $X = $hits[0]['x'] - 1;
                         $Y = $hits[0]['y'];
                         if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
@@ -127,7 +109,7 @@ class Ai
                     }
                     return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                 } else if ($vertical) {
-                    if ($hits[0]['y'] === 0) {
+                    if ($hits[0]['y'] == 0) {
                         $Y = $hits[count($hits) - 1]['y'] + 1;
                         $X = $hits[0]['x'];
                         if ($this->$this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
@@ -136,7 +118,7 @@ class Ai
                         }
                         return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
-                    if ($hits[count($hits) - 1]['x'] === 9) {
+                    if ($hits[count($hits) - 1]['x'] == 9) {
                         $Y = $hits[0]['y'] - 1;
                         $X = $hits[0]['x'];
                         if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
@@ -156,7 +138,7 @@ class Ai
             } else {
                 $direction = $this->randomDirection();
                 if ($direction === 'horizontal') {
-                    if ($hits[0]['x'] === 0) {
+                    if ($hits[0]['x'] == 0) {
                         $X = 1;
                         $Y = $hits[0]['y'];
                         if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
@@ -165,7 +147,7 @@ class Ai
                         }
                         return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
-                    if ($hits[0]['x'] === 9) {
+                    if ($hits[0]['x'] == 9) {
                         $X = 8;
                         $Y = $hits[0]['y'];
                         if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
@@ -182,7 +164,7 @@ class Ai
                     }
                     return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                 } else if ($direction === 'vertical') {
-                    if ($hits[0]['y'] === 0) {
+                    if ($hits[0]['y'] == 0) {
                         $Y = 1;
                         $X = $hits[0]['x'];
                         if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
@@ -191,7 +173,7 @@ class Ai
                         }
                         return $this->shoot($hitsArr, $missesArr, $shipsArr, $haloArr);
                     }
-                    if ($hits[0]['y'] === 9) {
+                    if ($hits[0]['y'] == 9) {
                         $Y = 8;
                         $X = $hits[0]['x'];
                         if ($this->checkInAiMemory(['y' => $Y, 'x' => $X], $halo, $ships, $misses, $hits)) {
@@ -259,7 +241,6 @@ class Ai
             array_push($halo, [ 'y' => $coordsFirstPoint['y'], 'x' => $coordsFirstPoint['x'] - 1, ]);
             array_push($halo, [ 'y' => $coordsFirstPoint['y'] + 1, 'x' => $coordsFirstPoint['x'] - 1, ]);
 
-            
             array_push($halo, [ 'y' => $coordsLastPoint['y'] - 1, 'x' => $coordsLastPoint['x'] + 1, ]);
             array_push($halo, [ 'y' => $coordsLastPoint['y'], 'x' => $coordsLastPoint['x'] + 1, ]);
             array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] + 1, ]);
@@ -294,7 +275,6 @@ class Ai
             array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'], ]);
             array_push($halo, [ 'y' => $coordsFirstPoint['y'] - 1, 'x' => $coordsFirstPoint['x'] + 1, ]);
 
-            
             array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] - 1, ]);
             array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'], ]);
             array_push($halo, [ 'y' => $coordsLastPoint['y'] + 1, 'x' => $coordsLastPoint['x'] + 1, ]);
