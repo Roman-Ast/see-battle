@@ -19,7 +19,7 @@
     "php-di/php-di": "^6.0",
     "slim/slim": "^4",
     "tightenco/collect": "^5.8",
-    "slim/psr7": "^0.4.0",
+    "slim/psr7": "^1.6.1",
     "slim/php-view": "^2.2"
   },
   "require-dev": {
